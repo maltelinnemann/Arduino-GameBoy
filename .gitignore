@@ -1,0 +1,21 @@
+# Arduino build output
+build/
+*.o
+*.elf
+*.hex
+*.bin
+
+# IDE
+.vscode/
+.idea/
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temp
+*.swp
+*.swo
+*~
