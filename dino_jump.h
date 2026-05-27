@@ -21,7 +21,15 @@ struct DJPlayer {
 struct Obstacle {
     float x, y;
     uint8_t w, h;
-    uint8_t type; // 0 small, 1 tall, 2 double
+    uint8_t type; // 0 butt, 1 shaft, 2 breasts, 3 flying
+    bool active;
+    bool shoots;
+    unsigned long lastShotMs;
+};
+
+struct DJBullet {
+    float x, y;
+    float vx, vy;
     bool active;
 };
 
@@ -31,15 +39,19 @@ public:
 
     virtual void setup() override;
     virtual GameResult loop(InputState& input) override;
-    virtual const char* getName() const override { return "Dino Jump"; }
+    virtual const char* getName() const override { return "Phallus"; }
 
 private:
     DJState _state;
     int _menuSelection;
+    unsigned long _menuEnteredTime;
 
     DJPlayer _player;
     static const int MAX_OBSTACLES = 6;
     Obstacle _obstacles[MAX_OBSTACLES];
+
+    static const int MAX_DJ_BULLETS = 5;
+    DJBullet _enemyBullets[MAX_DJ_BULLETS];
 
     float _speed;
     unsigned long _lastSpawnMs;
@@ -50,6 +62,7 @@ private:
     uint32_t _highScore;
 
     int _pauseSelection;
+    unsigned long _pauseMoveTime;
     static const int PAUSE_OPTIONS = 3;
     const char* _pauseLabels[PAUSE_OPTIONS];
 
@@ -58,10 +71,11 @@ private:
 
     static constexpr float GRAVITY = 0.55f;
     static constexpr float JUMP_VEL = -6.5f;
-    static constexpr float GROUND_Y = 56.0f;
+    static constexpr float GROUND_Y = 48.0f;
     static constexpr float PLAYER_X = 20.0f;
 
     void drawMenu();
+    void drawGame();
     void drawPlaying();
     void drawPause();
     void drawGameOver();
@@ -69,11 +83,14 @@ private:
     void drawGround();
     void drawScore();
     void drawObstacle(const Obstacle& obs);
+    void drawDJBullets();
 
     void startGame();
     void spawnObstacle();
     void updatePlayer(InputState& input);
     void updateObstacles();
+    void updateDJBullets();
+    void fireObstacleBullet(const Obstacle& obs);
     void checkCollisions();
     bool collidesWith(const Obstacle& obs) const;
     void saveHighScore();

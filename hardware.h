@@ -63,6 +63,7 @@ struct InputState {
 #define EEPROM_MAGIC_ADDR     0
 #define EEPROM_SI_SCORE_ADDR  2
 #define EEPROM_DJ_SCORE_ADDR  6
+#define EEPROM_VS_SCORE_ADDR  10
 
 void initEEPROM();
 uint32_t readHighScore(int addr);

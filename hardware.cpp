@@ -85,6 +85,7 @@ void initEEPROM() {
         uint32_t zero = 0;
         EEPROM.put(EEPROM_SI_SCORE_ADDR, zero);
         EEPROM.put(EEPROM_DJ_SCORE_ADDR, zero);
+        EEPROM.put(EEPROM_VS_SCORE_ADDR, zero);
     }
 }
 

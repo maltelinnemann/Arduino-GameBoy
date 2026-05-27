@@ -16,6 +16,7 @@ SpaceInvadersGame::SpaceInvadersGame() {
 void SpaceInvadersGame::setup() {
     _state = SIState::MENU;
     _menuSelection = 0;
+    _menuEnteredTime = millis();
     _highScore = readHighScore(EEPROM_SI_SCORE_ADDR);
 }
 
@@ -44,6 +45,7 @@ GameResult SpaceInvadersGame::loop(InputState& input) {
                 _state = SIState::PAUSED;
                 _pauseSelection = 0;
                 _pauseEnteredTime = millis();
+                _pauseMoveTime = 0;
                 return GameResult::CONTINUE;
             }
 
@@ -91,16 +93,26 @@ GameResult SpaceInvadersGame::loop(InputState& input) {
         }
 
         case SIState::PAUSED: {
-            // Ignore btn2 for first 300ms to prevent accidental double-toggle
-            if (input.up() && _pauseSelection > 0) _pauseSelection--;
-            if (input.down() && _pauseSelection < PAUSE_OPTIONS - 1) _pauseSelection++;
+            unsigned long now = millis();
+            if (now - _pauseMoveTime > 180) {
+                if (input.up() && _pauseSelection > 0) {
+                    _pauseSelection--;
+                    _pauseMoveTime = now;
+                }
+                if (input.down() && _pauseSelection < PAUSE_OPTIONS - 1) {
+                    _pauseSelection++;
+                    _pauseMoveTime = now;
+                }
+            }
             if (input.btn1.consumePress() || input.joyButton.consumePress()) {
                 if (_pauseSelection == 0) {
                     _state = SIState::PLAYING;
                 } else if (_pauseSelection == 1) {
                     startGame();
                 } else {
-                    return GameResult::EXIT_TO_MENU;
+                    _state = SIState::MENU;
+                    _menuSelection = 0;
+                    _menuEnteredTime = millis();
                 }
             }
             if (input.btn2.consumePress() && millis() - _pauseEnteredTime > 300) {
@@ -112,7 +124,9 @@ GameResult SpaceInvadersGame::loop(InputState& input) {
 
         case SIState::GAME_OVER: {
             if (input.btn1.consumePress() || input.joyButton.consumePress()) {
-                startGame();
+                _state = SIState::MENU;
+                _menuSelection = 0;
+                _menuEnteredTime = millis();
             } else if (input.btn2.consumePress()) {
                 return GameResult::EXIT_TO_MENU;
             }
@@ -415,23 +429,23 @@ void SpaceInvadersGame::checkCollisions() {
 
 void SpaceInvadersGame::drawMenu() {
     u8g2.clearBuffer();
-    u8g2.setFont(u8g2_font_8x13B_tf);
-    drawCenteredStr(16, "Space Invaders");
+
+    // Icon at top center
+    u8g2.drawXBMP(56, 2, 16, 16, ICON_SPACE_INVADERS);
 
     u8g2.setFont(u8g2_font_6x10_tf);
     char buf[32];
-    snprintf(buf, sizeof(buf), "High Score: %lu", _highScore);
-    drawCenteredStr(32, buf);
+    snprintf(buf, sizeof(buf), "Best: %lu", _highScore);
+    drawCenteredStr(26, buf);
 
-    drawMenuOption(48, "Start Game", _menuSelection == 0);
-    drawMenuOption(58, "Return to Menu", _menuSelection == 1);
+    drawMenuOption(42, "Start Game", _menuSelection == 0);
+    drawMenuOption(54, "Return to Menu", _menuSelection == 1);
     u8g2.sendBuffer();
 }
 
-void SpaceInvadersGame::drawPlaying() {
+void SpaceInvadersGame::drawGame() {
     u8g2.clearBuffer();
 
-    // Enemies
     for (int i = 0; i < MAX_ENEMIES; i++) {
         if (!_enemies[i].alive) continue;
         Enemy& e = _enemies[i];
@@ -448,31 +462,31 @@ void SpaceInvadersGame::drawPlaying() {
         }
     }
 
-    // Enemy bullets
     for (int i = 0; i < MAX_ENEMY_BULLETS; i++) {
         if (_enemyBullets[i].active) {
             u8g2.drawBox((int)_enemyBullets[i].x, (int)_enemyBullets[i].y, 2, 3);
         }
     }
 
-    // Player bullets
     for (int i = 0; i < MAX_PLAYER_BULLETS; i++) {
         if (_playerBullets[i].active) {
             u8g2.drawBox((int)_playerBullets[i].x, (int)_playerBullets[i].y, 1, 3);
         }
     }
 
-    // PowerUp
     if (_powerUp.active) {
         drawBitmap((int)_powerUp.x, (int)_powerUp.y, POWERUP_LIFE, 8, 8);
     }
 
-    // Player ship (blink if invulnerable)
     if (_invulnVisible) {
         drawShip();
     }
 
     drawUI();
+}
+
+void SpaceInvadersGame::drawPlaying() {
+    drawGame();
     u8g2.sendBuffer();
 }
 
@@ -499,8 +513,8 @@ void SpaceInvadersGame::drawUI() {
 }
 
 void SpaceInvadersGame::drawPause() {
-    drawPlaying(); // Show game state underneath
-    // Dimmed overlay
+    drawGame();
+
     u8g2.setDrawColor(0);
     u8g2.drawBox(0, 18, 128, 46);
     u8g2.setDrawColor(1);
@@ -528,6 +542,6 @@ void SpaceInvadersGame::drawGameOver() {
     snprintf(buf, sizeof(buf), "Best: %lu%s", _highScore, isNew ? " NEW!" : "");
     drawCenteredStr(42, buf);
 
-    drawCenteredStr(56, "Btn1: Retry  Btn2: Menu");
+    drawCenteredStr(56, "Btn1: Menu  Btn2: Home");
     u8g2.sendBuffer();
 }

@@ -1,6 +1,7 @@
 #include "dino_jump.h"
 #include "hardware.h"
 #include "sound.h"
+#include "bitmaps.h"
 
 extern SoundManager soundManager;
 
@@ -13,6 +14,7 @@ DinoJumpGame::DinoJumpGame() {
 void DinoJumpGame::setup() {
     _state = DJState::MENU;
     _menuSelection = 0;
+    _menuEnteredTime = millis();
     _highScore = readHighScore(EEPROM_DJ_SCORE_ADDR);
 }
 
@@ -37,23 +39,23 @@ GameResult DinoJumpGame::loop(InputState& input) {
                 _state = DJState::PAUSED;
                 _pauseSelection = 0;
                 _pauseEnteredTime = millis();
+                _pauseMoveTime = 0;
                 return GameResult::CONTINUE;
             }
 
             updatePlayer(input);
             updateObstacles();
+            updateDJBullets();
 
-            // Spawn obstacles
             if (millis() - _lastSpawnMs >= (unsigned long)_spawnIntervalMs) {
                 spawnObstacle();
                 _lastSpawnMs = millis();
             }
 
-            // Speed ramp
             if (millis() - _lastSpeedIncreaseMs >= 3000) {
                 _speed += 0.15f;
-                _spawnIntervalMs -= 15;
-                if (_spawnIntervalMs < 400) _spawnIntervalMs = 400;
+                _spawnIntervalMs -= 20;
+                if (_spawnIntervalMs < 350) _spawnIntervalMs = 350;
                 _lastSpeedIncreaseMs = millis();
             }
 
@@ -65,15 +67,26 @@ GameResult DinoJumpGame::loop(InputState& input) {
         }
 
         case DJState::PAUSED: {
-            if ((input.up() || input.left()) && _pauseSelection > 0) _pauseSelection--;
-            if ((input.down() || input.right()) && _pauseSelection < PAUSE_OPTIONS - 1) _pauseSelection++;
+            unsigned long now = millis();
+            if (now - _pauseMoveTime > 180) {
+                if (input.up() && _pauseSelection > 0) {
+                    _pauseSelection--;
+                    _pauseMoveTime = now;
+                }
+                if (input.down() && _pauseSelection < PAUSE_OPTIONS - 1) {
+                    _pauseSelection++;
+                    _pauseMoveTime = now;
+                }
+            }
             if (input.btn1.consumePress() || input.joyButton.consumePress()) {
                 if (_pauseSelection == 0) {
                     _state = DJState::PLAYING;
                 } else if (_pauseSelection == 1) {
                     startGame();
                 } else {
-                    return GameResult::EXIT_TO_MENU;
+                    _state = DJState::MENU;
+                    _menuSelection = 0;
+                    _menuEnteredTime = millis();
                 }
             }
             if (input.btn2.consumePress() && millis() - _pauseEnteredTime > 300) {
@@ -85,7 +98,9 @@ GameResult DinoJumpGame::loop(InputState& input) {
 
         case DJState::GAME_OVER: {
             if (input.btn1.consumePress() || input.joyButton.consumePress()) {
-                startGame();
+                _state = DJState::MENU;
+                _menuSelection = 0;
+                _menuEnteredTime = millis();
             } else if (input.btn2.consumePress()) {
                 return GameResult::EXIT_TO_MENU;
             }
@@ -107,10 +122,14 @@ void DinoJumpGame::startGame() {
     _player.animFrame = 0;
     _player.lastAnimTime = millis();
 
-    for (int i = 0; i < MAX_OBSTACLES; i++) _obstacles[i].active = false;
+    for (int i = 0; i < MAX_OBSTACLES; i++) {
+        _obstacles[i].active = false;
+        _obstacles[i].shoots = false;
+    }
+    for (int i = 0; i < MAX_DJ_BULLETS; i++) _enemyBullets[i].active = false;
 
-    _speed = 2.5f;
-    _spawnIntervalMs = 1200;
+    _speed = 2.2f;
+    _spawnIntervalMs = 1400;
     _lastSpawnMs = millis();
     _lastSpeedIncreaseMs = millis();
     _score = 0;
@@ -134,7 +153,6 @@ void DinoJumpGame::updatePlayer(InputState& input) {
         _player.onGround = true;
     }
 
-    // Animation
     if (millis() - _player.lastAnimTime > 150) {
         _player.animFrame = (_player.animFrame + 1) % 4;
         _player.lastAnimTime = millis();
@@ -147,15 +165,23 @@ void DinoJumpGame::spawnObstacle() {
     for (int i = 0; i < MAX_OBSTACLES; i++) {
         if (!_obstacles[i].active) {
             Obstacle& o = _obstacles[i];
-            o.type = random(0, 3);
+            o.type = random(0, 4);
             o.x = 130;
             switch (o.type) {
-                case 0: o.w = 4; o.h = 8;  break; // small
-                case 1: o.w = 4; o.h = 14; break; // tall
-                case 2: o.w = 10; o.h = 8; break; // double
+                case 0: o.w = 8;  o.h = 8;  o.y = GROUND_Y + 14 - o.h; break; // butt
+                case 1: o.w = 6;  o.h = 14; o.y = GROUND_Y + 14 - o.h; break; // shaft
+                case 2: o.w = 12; o.h = 8;  o.y = GROUND_Y + 14 - o.h; break; // breasts
+                case 3: o.w = 10; o.h = 8;  o.y = random(10, 38);     break; // flying
             }
-            o.y = GROUND_Y + 8 - o.h;
             o.active = true;
+
+            // Shooting: flying always shoots, others chance increases with speed
+            int shootChance = (_speed > 4.0f) ? 40 : (_speed > 3.0f ? 20 : 0);
+            o.shoots = (o.type == 3) || (random(0, 100) < shootChance);
+            o.lastShotMs = millis() + ((o.type == 3) ? random(500, 1200) : random(800, 2500));
+
+            // Randomize next spawn interval for variety
+            _spawnIntervalMs = max(350, (int)(1400 - (_speed - 2.2f) * 200) + random(-300, 150));
             return;
         }
     }
@@ -165,8 +191,43 @@ void DinoJumpGame::updateObstacles() {
     for (int i = 0; i < MAX_OBSTACLES; i++) {
         if (_obstacles[i].active) {
             _obstacles[i].x -= _speed;
-            if (_obstacles[i].x + _obstacles[i].w < 0) {
+            if (_obstacles[i].x + _obstacles[i].w < -15) {
                 _obstacles[i].active = false;
+            }
+            // Shooting obstacles fire toward player
+            int shootRange = (_obstacles[i].type == 3) ? 120 : 110;
+            if (_obstacles[i].shoots && _obstacles[i].x < shootRange && _obstacles[i].x > 10) {
+                if (millis() >= _obstacles[i].lastShotMs) {
+                    fireObstacleBullet(_obstacles[i]);
+                    _obstacles[i].lastShotMs = millis() + random(1500, 3500);
+                }
+            }
+        }
+    }
+}
+
+// ==================== OBSTACLE BULLETS ====================
+
+void DinoJumpGame::fireObstacleBullet(const Obstacle& obs) {
+    for (int i = 0; i < MAX_DJ_BULLETS; i++) {
+        if (!_enemyBullets[i].active) {
+            _enemyBullets[i].x = obs.x;
+            _enemyBullets[i].y = obs.y + obs.h / 2;
+            _enemyBullets[i].vx = -1.5f - _speed * 0.3f;
+            _enemyBullets[i].vy = (random(0, 100) < 50) ? 0.3f : -0.3f;
+            _enemyBullets[i].active = true;
+            return;
+        }
+    }
+}
+
+void DinoJumpGame::updateDJBullets() {
+    for (int i = 0; i < MAX_DJ_BULLETS; i++) {
+        if (_enemyBullets[i].active) {
+            _enemyBullets[i].x += _enemyBullets[i].vx;
+            _enemyBullets[i].y += _enemyBullets[i].vy;
+            if (_enemyBullets[i].x < -5 || _enemyBullets[i].y < 0 || _enemyBullets[i].y > 63) {
+                _enemyBullets[i].active = false;
             }
         }
     }
@@ -184,16 +245,30 @@ void DinoJumpGame::checkCollisions() {
             return;
         }
     }
+    // Bullet collisions
+    for (int i = 0; i < MAX_DJ_BULLETS; i++) {
+        if (!_enemyBullets[i].active) continue;
+        DJBullet& b = _enemyBullets[i];
+        float px = PLAYER_X - 2;
+        float py = _player.y + 2;
+        if (b.x >= px && b.x <= px + 8 && b.y >= py && b.y <= py + 12) {
+            b.active = false;
+            _state = DJState::GAME_OVER;
+            saveHighScore();
+            _gameOverTime = millis();
+            soundManager.beep(150);
+            return;
+        }
+    }
 }
 
 bool DinoJumpGame::collidesWith(const Obstacle& obs) const {
-    // Player hitbox slightly smaller than visual for fairness
-    float px = PLAYER_X - 3;
-    float py = _player.y + 3;
-    float pw = 8;
-    float ph = 12;
+    float px = PLAYER_X - 2;
+    float py = _player.y + 4;
+    float pw = 7;
+    float ph = 10;
 
-    return (px < obs.x + obs.w && px + pw > obs.x &&
+    return (px < obs.x + obs.w - 1 && px + pw > obs.x + 1 &&
             py < obs.y + obs.h && py + ph > obs.y);
 }
 
@@ -210,39 +285,41 @@ void DinoJumpGame::saveHighScore() {
 
 void DinoJumpGame::drawMenu() {
     u8g2.clearBuffer();
-    u8g2.setFont(u8g2_font_8x13B_tf);
-    drawCenteredStr(16, "Dino Jump");
+
+    // Icon at top center
+    u8g2.drawXBMP(56, 2, 16, 16, ICON_DINO_JUMP);
 
     u8g2.setFont(u8g2_font_6x10_tf);
     char buf[32];
-    snprintf(buf, sizeof(buf), "High Score: %lu", _highScore);
-    drawCenteredStr(32, buf);
+    snprintf(buf, sizeof(buf), "Best: %lu", _highScore);
+    drawCenteredStr(26, buf);
 
-    drawMenuOption(48, "Start Game", _menuSelection == 0);
-    drawMenuOption(58, "Return to Menu", _menuSelection == 1);
-
-    // Draw small phallus preview
-    drawPhallus(64, 20);
+    drawMenuOption(42, "Start Game", _menuSelection == 0);
+    drawMenuOption(54, "Return to Menu", _menuSelection == 1);
 
     u8g2.sendBuffer();
 }
 
-void DinoJumpGame::drawPlaying() {
+void DinoJumpGame::drawGame() {
     u8g2.clearBuffer();
 
     drawGround();
 
-    // Obstacles
     for (int i = 0; i < MAX_OBSTACLES; i++) {
         if (_obstacles[i].active) {
             drawObstacle(_obstacles[i]);
         }
     }
 
-    // Player
+    drawDJBullets();
+
     drawPhallus(PLAYER_X, _player.y);
 
     drawScore();
+}
+
+void DinoJumpGame::drawPlaying() {
+    drawGame();
     u8g2.sendBuffer();
 }
 
@@ -250,23 +327,23 @@ void DinoJumpGame::drawPhallus(float px, float py) {
     int cx = (int)px;
     int topY = (int)py;
 
-    // Testes (two circles at base)
+    // Testes
     u8g2.drawDisc(cx - 3, topY + 12, 3);
     u8g2.drawDisc(cx + 3, topY + 12, 3);
 
     // Shaft
     u8g2.drawBox(cx - 2, topY + 2, 5, 9);
 
-    // Glans (wider tip)
+    // Glans
     u8g2.drawDisc(cx, topY + 1, 4);
 
-    // Eyes on glans (animating: blink or shift)
+    // Eyes
     if (_player.animFrame % 2 == 0) {
         u8g2.drawPixel(cx - 1, topY - 1);
         u8g2.drawPixel(cx + 1, topY - 1);
     }
 
-    // Running animation: legs/wiggle when on ground
+    // Running legs
     if (_player.onGround) {
         if (_player.animFrame == 0 || _player.animFrame == 2) {
             u8g2.drawPixel(cx - 3, topY + 13);
@@ -279,12 +356,11 @@ void DinoJumpGame::drawPhallus(float px, float py) {
 }
 
 void DinoJumpGame::drawGround() {
-    u8g2.drawHLine(0, GROUND_Y + 16, 128);
-    // Scrolling dots
+    u8g2.drawHLine(0, GROUND_Y + 14, 128);
     int offset = (millis() / 60) % 16;
     for (int i = 0; i < 128; i += 12) {
         int gx = (i + offset) % 128;
-        u8g2.drawPixel(gx, (int)(GROUND_Y + 16 + 1));
+        u8g2.drawPixel(gx, (int)(GROUND_Y + 15));
     }
 }
 
@@ -299,34 +375,102 @@ void DinoJumpGame::drawScore() {
 void DinoJumpGame::drawObstacle(const Obstacle& obs) {
     int ox = (int)obs.x;
     int oy = (int)obs.y;
-    // Draw cactus-like shapes
-    if (obs.type == 0 || obs.type == 1) {
-        // Single cactus
-        u8g2.drawBox(ox, oy, obs.w, obs.h);
-        if (obs.type == 1) {
-            // Branches on tall cactus
-            u8g2.drawBox(ox - 2, oy + 4, 2, 3);
-            u8g2.drawBox(ox + obs.w, oy + 4, 2, 3);
+
+    switch (obs.type) {
+        case 0: { // Butt - two round cheeks
+            // Left cheek
+            u8g2.drawDisc(ox + 2, oy + 5, 3);
+            u8g2.drawDisc(ox + 2, oy + 5, 2);
+            u8g2.setDrawColor(0);
+            u8g2.drawDisc(ox + 2, oy + 4, 1);
+            u8g2.setDrawColor(1);
+            // Right cheek
+            u8g2.drawDisc(ox + 6, oy + 5, 3);
+            u8g2.drawDisc(ox + 6, oy + 5, 2);
+            u8g2.setDrawColor(0);
+            u8g2.drawDisc(ox + 6, oy + 4, 1);
+            u8g2.setDrawColor(1);
+            // Top curve connecting cheeks
+            u8g2.drawHLine(ox + 1, oy + 1, 6);
+            // Crack
+            u8g2.drawVLine(ox + 4, oy + 3, 5);
+            break;
         }
-    } else {
-        // Double cactus
-        u8g2.drawBox(ox, oy, 4, obs.h);
-        u8g2.drawBox(ox + 6, oy, 4, obs.h);
+        case 1: { // Shaft and balls - tall obstacle with fast primitives
+            // Shaft
+            u8g2.drawBox(ox + 1, oy + 1, 4, 9);
+            // Tip
+            u8g2.drawDisc(ox + 3, oy + 1, 2);
+            // Testes
+            u8g2.drawDisc(ox, oy + 12, 3);
+            u8g2.drawDisc(ox + 6, oy + 12, 3);
+            // Eye on tip
+            u8g2.drawPixel(ox + 3, oy - 1);
+            break;
+        }
+        case 2: { // Breasts - two larger circles with nipples
+            // Left breast
+            u8g2.drawDisc(ox + 4, oy + 4, 4);
+            u8g2.drawDisc(ox + 4, oy + 4, 3);
+            u8g2.setDrawColor(0);
+            u8g2.drawPixel(ox + 4, oy + 4);
+            u8g2.setDrawColor(1);
+            // Right breast
+            u8g2.drawDisc(ox + 10, oy + 4, 4);
+            u8g2.drawDisc(ox + 10, oy + 4, 3);
+            u8g2.setDrawColor(0);
+            u8g2.drawPixel(ox + 10, oy + 4);
+            u8g2.setDrawColor(1);
+            // Cleavage
+            u8g2.drawVLine(ox + 7, oy + 1, 6);
+            // Under-curve connecting line
+            u8g2.drawHLine(ox + 2, oy + 8, 10);
+            break;
+        }
+        case 3: { // Flying penis with wings
+            int bob = (int)(sin(millis() / 120.0f + ox) * 2.5f);
+            int fy = oy + bob;
+            u8g2.drawPixel(ox, fy + 3);
+            u8g2.drawPixel(ox - 1, fy + 2);
+            u8g2.drawPixel(ox - 1, fy + 5);
+            u8g2.drawPixel(ox + 9, fy + 3);
+            u8g2.drawPixel(ox + 10, fy + 2);
+            u8g2.drawPixel(ox + 10, fy + 5);
+            u8g2.drawBox(ox + 2, fy + 1, 5, 6);
+            u8g2.drawDisc(ox + 7, fy + 4, 2);
+            u8g2.drawPixel(ox + 8, fy + 3);
+            break;
+        }
+    }
+
+    // Shooting indicator: small spark above
+    if (obs.shoots) {
+        u8g2.drawPixel(ox + obs.w / 2, oy - 2);
+        u8g2.drawPixel(ox + obs.w / 2 - 1, oy - 1);
+        u8g2.drawPixel(ox + obs.w / 2 + 1, oy - 1);
+    }
+}
+
+void DinoJumpGame::drawDJBullets() {
+    for (int i = 0; i < MAX_DJ_BULLETS; i++) {
+        if (_enemyBullets[i].active) {
+            u8g2.drawBox((int)_enemyBullets[i].x, (int)_enemyBullets[i].y, 2, 2);
+        }
     }
 }
 
 void DinoJumpGame::drawPause() {
-    drawPlaying();
-    // Overlay
+    drawGame();
+
     u8g2.setDrawColor(0);
-    u8g2.drawBox(0, 18, 128, 46);
+    u8g2.drawBox(0, 16, 128, 48);
     u8g2.setDrawColor(1);
-    u8g2.drawFrame(0, 18, 128, 46);
+    u8g2.drawFrame(0, 16, 128, 48);
 
     u8g2.setFont(u8g2_font_6x10_tf);
-    drawCenteredStr(30, "PAUSED");
+    drawCenteredStr(28, "PAUSED");
     for (int i = 0; i < PAUSE_OPTIONS; i++) {
-        drawMenuOption(42 + i * 10, _pauseLabels[i], _pauseSelection == i);
+        drawMenuOption(40 + i * 10, _pauseLabels[i], _pauseSelection == i);
     }
     u8g2.sendBuffer();
 }
@@ -334,17 +478,17 @@ void DinoJumpGame::drawPause() {
 void DinoJumpGame::drawGameOver() {
     u8g2.clearBuffer();
     u8g2.setFont(u8g2_font_8x13B_tf);
-    drawCenteredStr(16, "GAME OVER");
+    drawCenteredStr(14, "GAME OVER");
 
     u8g2.setFont(u8g2_font_6x10_tf);
     char buf[32];
     snprintf(buf, sizeof(buf), "Score: %lu", _score);
-    drawCenteredStr(32, buf);
+    drawCenteredStr(30, buf);
 
     bool isNew = _score >= _highScore && _score > 0;
     snprintf(buf, sizeof(buf), "Best: %lu%s", _highScore, isNew ? " NEW!" : "");
-    drawCenteredStr(42, buf);
+    drawCenteredStr(40, buf);
 
-    drawCenteredStr(56, "Btn1: Retry  Btn2: Menu");
+    drawCenteredStr(56, "Btn1: Menu  Btn2: Home");
     u8g2.sendBuffer();
 }

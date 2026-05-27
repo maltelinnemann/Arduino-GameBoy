@@ -1,9 +1,11 @@
 #include "hardware.h"
 #include "game_base.h"
 #include "sound.h"
+#include "bitmaps.h"
 #include "homescreen.h"
 #include "space_invaders.h"
 #include "dino_jump.h"
+#include "vampire_survivors.h"
 
 // ==================== GLOBAL INSTANCES ====================
 SoundManager soundManager;
@@ -12,6 +14,7 @@ InputState input;
 Homescreen homescreen;
 SpaceInvadersGame spaceInvaders;
 DinoJumpGame dinoJump;
+VampireSurvivorsGame vampireSurvivors;
 
 enum class AppState : uint8_t {
     HOMESCREEN,
@@ -36,12 +39,14 @@ void setup() {
     input.joyButton.init(PIN_JOY_SW, INPUT_PULLUP);
 
     // Register games
-    homescreen.addGame(&spaceInvaders);
-    homescreen.addGame(&dinoJump);
+    homescreen.addGame(&spaceInvaders, ICON_SPACE_INVADERS);
+    homescreen.addGame(&dinoJump, ICON_DINO_JUMP);
+    homescreen.addGame(&vampireSurvivors, ICON_VAMPIRE_SURVIVORS);
 
     homescreen.setup();
     spaceInvaders.setup();
     dinoJump.setup();
+    vampireSurvivors.setup();
 
     // Seed random from unconnected analog pin + runtime
     randomSeed(analogRead(A2) ^ analogRead(A3) ^ micros());

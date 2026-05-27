@@ -44,7 +44,7 @@ public:
 
     virtual void setup() override;
     virtual GameResult loop(InputState& input) override;
-    virtual const char* getName() const override { return "Space Invaders"; }
+    virtual const char* getName() const override { return "Infinity"; }
 
 private:
     SIState _state;
@@ -84,14 +84,17 @@ private:
 
     // Pause
     int _pauseSelection;
+    unsigned long _pauseMoveTime;
     static const int PAUSE_OPTIONS = 3;
     const char* _pauseLabels[PAUSE_OPTIONS];
 
     // Game Over
     unsigned long _gameOverTime;
     unsigned long _pauseEnteredTime;
+    unsigned long _menuEnteredTime;
 
     void drawMenu();
+    void drawGame();
     void drawPlaying();
     void drawPause();
     void drawGameOver();
