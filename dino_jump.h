@@ -39,7 +39,7 @@ public:
 
     virtual void setup() override;
     virtual GameResult loop(InputState& input) override;
-    virtual const char* getName() const override { return "Phallus"; }
+    virtual const char* getName() const override { return "Velocity"; }
 
 private:
     DJState _state;
@@ -79,7 +79,7 @@ private:
     void drawPlaying();
     void drawPause();
     void drawGameOver();
-    void drawPhallus(float px, float py);
+    void drawRunner(float px, float py);
     void drawGround();
     void drawScore();
     void drawObstacle(const Obstacle& obs);

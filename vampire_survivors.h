@@ -95,7 +95,7 @@ private:
     unsigned long _gameOverTime;
 
     // Available upgrade pool
-    static const int UPGRADE_POOL_SIZE = 8;
+    static const int UPGRADE_POOL_SIZE = 7;
     static const VSUpgrade UPGRADE_POOL[UPGRADE_POOL_SIZE];
 
     void drawMenu();

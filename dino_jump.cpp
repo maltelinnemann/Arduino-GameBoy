@@ -138,7 +138,7 @@ void DinoJumpGame::startGame() {
 // ==================== PLAYER ====================
 
 void DinoJumpGame::updatePlayer(InputState& input) {
-    if (_player.onGround && input.btn1.consumePress()) {
+    if (_player.onGround && (input.btn1.consumePress() || input.joyButton.consumePress())) {
         _player.vy = JUMP_VEL;
         _player.onGround = false;
         soundManager.beep(10);
@@ -168,10 +168,10 @@ void DinoJumpGame::spawnObstacle() {
             o.type = random(0, 4);
             o.x = 130;
             switch (o.type) {
-                case 0: o.w = 8;  o.h = 8;  o.y = GROUND_Y + 14 - o.h; break; // butt
-                case 1: o.w = 6;  o.h = 14; o.y = GROUND_Y + 14 - o.h; break; // shaft
-                case 2: o.w = 12; o.h = 8;  o.y = GROUND_Y + 14 - o.h; break; // breasts
-                case 3: o.w = 10; o.h = 8;  o.y = random(10, 38);     break; // flying
+                case 0: o.w = 8;  o.h = 8;  o.y = GROUND_Y + 14 - o.h; break; // crate
+                case 1: o.w = 6;  o.h = 14; o.y = GROUND_Y + 14 - o.h; break; // pillar
+                case 2: o.w = 12; o.h = 8;  o.y = GROUND_Y + 14 - o.h; break; // double barrier
+                case 3: o.w = 10; o.h = 8;  o.y = random(10, 38);     break; // spinner drone
             }
             o.active = true;
 
@@ -313,7 +313,7 @@ void DinoJumpGame::drawGame() {
 
     drawDJBullets();
 
-    drawPhallus(PLAYER_X, _player.y);
+    drawRunner(PLAYER_X, _player.y);
 
     drawScore();
 }
@@ -323,35 +323,49 @@ void DinoJumpGame::drawPlaying() {
     u8g2.sendBuffer();
 }
 
-void DinoJumpGame::drawPhallus(float px, float py) {
+void DinoJumpGame::drawRunner(float px, float py) {
     int cx = (int)px;
     int topY = (int)py;
 
-    // Testes
-    u8g2.drawDisc(cx - 3, topY + 12, 3);
-    u8g2.drawDisc(cx + 3, topY + 12, 3);
+    // Sleek aerodynamic body — arrow/diamond shape
+    u8g2.drawBox(cx - 2, topY + 4, 5, 6);          // torso
+    u8g2.drawPixel(cx, topY + 2);                    // pointed top
+    u8g2.drawPixel(cx - 1, topY + 3);
+    u8g2.drawPixel(cx + 1, topY + 3);
 
-    // Shaft
-    u8g2.drawBox(cx - 2, topY + 2, 5, 9);
+    // Head (small triangle facing right = direction of movement)
+    u8g2.drawPixel(cx + 3, topY + 5);
+    u8g2.drawPixel(cx + 4, topY + 6);
+    u8g2.drawPixel(cx + 3, topY + 7);
 
-    // Glans
-    u8g2.drawDisc(cx, topY + 1, 4);
-
-    // Eyes
+    // Eye
     if (_player.animFrame % 2 == 0) {
-        u8g2.drawPixel(cx - 1, topY - 1);
-        u8g2.drawPixel(cx + 1, topY - 1);
+        u8g2.drawPixel(cx + 2, topY + 5);
     }
 
-    // Running legs
+    // Running legs (animated)
     if (_player.onGround) {
-        if (_player.animFrame == 0 || _player.animFrame == 2) {
-            u8g2.drawPixel(cx - 3, topY + 13);
-            u8g2.drawPixel(cx + 3, topY + 13);
+        if (_player.animFrame == 0) {
+            u8g2.drawVLine(cx - 1, topY + 10, 4);    // left leg straight
+            u8g2.drawVLine(cx + 1, topY + 10, 3);    // right leg back
+            u8g2.drawPixel(cx + 2, topY + 12);
+        } else if (_player.animFrame == 1) {
+            u8g2.drawVLine(cx - 2, topY + 10, 3);    // left leg forward
+            u8g2.drawPixel(cx - 3, topY + 12);
+            u8g2.drawVLine(cx, topY + 10, 4);         // right leg straight
+        } else if (_player.animFrame == 2) {
+            u8g2.drawVLine(cx - 1, topY + 10, 4);
+            u8g2.drawVLine(cx + 2, topY + 10, 3);
+            u8g2.drawPixel(cx + 1, topY + 12);
         } else {
-            u8g2.drawPixel(cx - 4, topY + 14);
-            u8g2.drawPixel(cx + 4, topY + 14);
+            u8g2.drawVLine(cx - 2, topY + 10, 3);
+            u8g2.drawPixel(cx - 1, topY + 12);
+            u8g2.drawVLine(cx, topY + 10, 4);
         }
+    } else {
+        // In air: legs tucked
+        u8g2.drawPixel(cx - 1, topY + 11);
+        u8g2.drawPixel(cx + 1, topY + 11);
     }
 }
 
@@ -377,68 +391,37 @@ void DinoJumpGame::drawObstacle(const Obstacle& obs) {
     int oy = (int)obs.y;
 
     switch (obs.type) {
-        case 0: { // Butt - two round cheeks
-            // Left cheek
-            u8g2.drawDisc(ox + 2, oy + 5, 3);
-            u8g2.drawDisc(ox + 2, oy + 5, 2);
-            u8g2.setDrawColor(0);
-            u8g2.drawDisc(ox + 2, oy + 4, 1);
-            u8g2.setDrawColor(1);
-            // Right cheek
-            u8g2.drawDisc(ox + 6, oy + 5, 3);
-            u8g2.drawDisc(ox + 6, oy + 5, 2);
-            u8g2.setDrawColor(0);
-            u8g2.drawDisc(ox + 6, oy + 4, 1);
-            u8g2.setDrawColor(1);
-            // Top curve connecting cheeks
-            u8g2.drawHLine(ox + 1, oy + 1, 6);
-            // Crack
-            u8g2.drawVLine(ox + 4, oy + 3, 5);
+        case 0: { // Crate - simple block with cross
+            u8g2.drawFrame(ox, oy, 8, 8);
+            u8g2.drawHLine(ox + 2, oy + 4, 4);
+            u8g2.drawVLine(ox + 4, oy + 2, 4);
             break;
         }
-        case 1: { // Shaft and balls - tall obstacle with fast primitives
-            // Shaft
-            u8g2.drawBox(ox + 1, oy + 1, 4, 9);
-            // Tip
-            u8g2.drawDisc(ox + 3, oy + 1, 2);
-            // Testes
-            u8g2.drawDisc(ox, oy + 12, 3);
-            u8g2.drawDisc(ox + 6, oy + 12, 3);
-            // Eye on tip
-            u8g2.drawPixel(ox + 3, oy - 1);
+        case 1: { // Tall pillar
+            u8g2.drawBox(ox + 1, oy + 3, 4, 9);
+            u8g2.drawHLine(ox, oy + 2, 6);
+            u8g2.drawHLine(ox, oy + 12, 6);
             break;
         }
-        case 2: { // Breasts - two larger circles with nipples
-            // Left breast
-            u8g2.drawDisc(ox + 4, oy + 4, 4);
-            u8g2.drawDisc(ox + 4, oy + 4, 3);
-            u8g2.setDrawColor(0);
-            u8g2.drawPixel(ox + 4, oy + 4);
-            u8g2.setDrawColor(1);
-            // Right breast
-            u8g2.drawDisc(ox + 10, oy + 4, 4);
-            u8g2.drawDisc(ox + 10, oy + 4, 3);
-            u8g2.setDrawColor(0);
-            u8g2.drawPixel(ox + 10, oy + 4);
-            u8g2.setDrawColor(1);
-            // Cleavage
-            u8g2.drawVLine(ox + 7, oy + 1, 6);
-            // Under-curve connecting line
-            u8g2.drawHLine(ox + 2, oy + 8, 10);
+        case 2: { // Double low barrier
+            u8g2.drawBox(ox, oy + 2, 4, 6);
+            u8g2.drawBox(ox + 8, oy + 2, 4, 6);
+            u8g2.drawHLine(ox + 2, oy + 1, 8);
+            // Spikes on top
+            u8g2.drawPixel(ox + 1, oy + 1);
+            u8g2.drawPixel(ox + 9, oy + 1);
             break;
         }
-        case 3: { // Flying penis with wings
+        case 3: { // Flying spinner drone
             int bob = (int)(sin(millis() / 120.0f + ox) * 2.5f);
             int fy = oy + bob;
-            u8g2.drawPixel(ox, fy + 3);
-            u8g2.drawPixel(ox - 1, fy + 2);
-            u8g2.drawPixel(ox - 1, fy + 5);
-            u8g2.drawPixel(ox + 9, fy + 3);
-            u8g2.drawPixel(ox + 10, fy + 2);
-            u8g2.drawPixel(ox + 10, fy + 5);
-            u8g2.drawBox(ox + 2, fy + 1, 5, 6);
-            u8g2.drawDisc(ox + 7, fy + 4, 2);
-            u8g2.drawPixel(ox + 8, fy + 3);
+            // Cross shape that spins visually via the bob
+            u8g2.drawHLine(ox + 2, fy + 4, 6);
+            u8g2.drawVLine(ox + 5, fy + 1, 6);
+            u8g2.drawPixel(ox + 3, fy + 3);
+            u8g2.drawPixel(ox + 7, fy + 3);
+            u8g2.drawPixel(ox + 3, fy + 5);
+            u8g2.drawPixel(ox + 7, fy + 5);
             break;
         }
     }

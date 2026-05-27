@@ -8,12 +8,47 @@ U8G2_SSD1309_128X64_NONAME0_F_4W_HW_SPI u8g2(
     PIN_OLED_RST
 );
 
+// Pointers for ISR access (non-static for extern access from GameBoy.ino)
+DebouncedButton* _btn1Ptr = nullptr;
+DebouncedButton* _btn2Ptr = nullptr;
+DebouncedButton* _joyBtnPtr = nullptr;
+
+// ==================== PIN CHANGE INTERRUPTS ====================
+
+// Pin 2 uses INT4 (external interrupt 4)
+ISR(INT4_vect) {
+    if (_joyBtnPtr) _joyBtnPtr->irqFired = true;
+}
+
+// Track last PORTB state for PCINT to detect which pin changed
+static volatile uint8_t _lastPinB = 0;
+
+// Pins 12 (PB6) and 13 (PB7) use PCINT0
+ISR(PCINT0_vect) {
+    uint8_t current = PINB;
+    uint8_t changed = _lastPinB ^ current;
+    _lastPinB = current;
+    if (changed & (1 << PB6) && _btn1Ptr) _btn1Ptr->irqFired = true;
+    if (changed & (1 << PB7) && _btn2Ptr) _btn2Ptr->irqFired = true;
+}
+
+void enableButtonInterrupts(int joyPin, int btn1Pin, int btn2Pin) {
+    // Pin 2 (joy SW) — External interrupt INT4
+    EIMSK |= (1 << INT4);
+    EICRB |= (1 << ISC40); // Any logical change
+
+    // Pins 12 (PB6) and 13 (PB7) — Pin change interrupt PCI0
+    PCMSK0 |= (1 << PCINT6) | (1 << PCINT7);
+    PCICR |= (1 << PCIE0);
+}
+
 // ==================== DEBOUNCED BUTTON ====================
 
 void DebouncedButton::init(int p, int mode) {
     pin = p;
     pinMode(pin, mode);
     activeLow = (mode == INPUT_PULLUP);
+    irqFired = false;
 
     // Read initial state to avoid spurious edge on first update
     bool reading = digitalRead(pin);
@@ -29,13 +64,20 @@ void DebouncedButton::update() {
     const unsigned long DEBOUNCE_MS = 30;
     lastDebState = state;
 
+    // Always poll the pin (interrupt just speeds up response)
     bool reading = digitalRead(pin);
-    if (activeLow) reading = !reading;  // normalize: true always means pressed
+    if (activeLow) reading = !reading;
+
+    // Clear interrupt flag — the read above already captured any change
+    if (irqFired) {
+        irqFired = false;
+    }
 
     if (reading != rawState) {
         rawState = reading;
         lastChangeMs = millis();
     }
+
     if (millis() - lastChangeMs > DEBOUNCE_MS) {
         bool prevState = state;
         state = rawState;
@@ -86,6 +128,7 @@ void initEEPROM() {
         EEPROM.put(EEPROM_SI_SCORE_ADDR, zero);
         EEPROM.put(EEPROM_DJ_SCORE_ADDR, zero);
         EEPROM.put(EEPROM_VS_SCORE_ADDR, zero);
+        EEPROM.put(EEPROM_OG_SCORE_ADDR, zero);
     }
 }
 

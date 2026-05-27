@@ -5,9 +5,21 @@
 
 #define HOMESCREEN_MAX_GAMES 5
 
+enum class HSState : uint8_t {
+    BOOT_ANIMATION,
+    IDLE,
+    SELECTING
+};
+
 struct GameEntry {
     Game* game;
     const uint8_t* icon;
+};
+
+struct Particle {
+    float x, y;
+    float vx, vy;
+    uint8_t life;
 };
 
 class Homescreen {
@@ -27,8 +39,23 @@ private:
     unsigned long _lastMoveTime;
     unsigned long _lastFrameTime;
 
-    void draw();
+    HSState _state;
+    unsigned long _stateStartMs;
+    unsigned long _animPhaseMs;
+    uint8_t _animPhase;
+    uint8_t _revealChars;
+    bool _idleBlink;
+
+    static const int MAX_PARTICLES = 30;
+    Particle _particles[MAX_PARTICLES];
+
     void drawCard(int idx, int centerX);
+
+    void drawBootAnimation();
+    void drawIdle();
+    void drawSelection();
+    void spawnParticles(int cx, int cy, int count);
+    void updateParticles();
 };
 
 #endif

@@ -35,6 +35,7 @@ struct DebouncedButton {
     unsigned long lastChangeMs;
     bool activeLow;      // true when INPUT_PULLUP (pressed reads LOW)
     bool pressedEdge;    // latched: true if pressed since last consume
+    volatile bool irqFired; // set by ISR on any pin change
 
     void init(int p, int mode);
     void update();
@@ -64,10 +65,17 @@ struct InputState {
 #define EEPROM_SI_SCORE_ADDR  2
 #define EEPROM_DJ_SCORE_ADDR  6
 #define EEPROM_VS_SCORE_ADDR  10
+#define EEPROM_OG_SCORE_ADDR  14
 
 void initEEPROM();
 uint32_t readHighScore(int addr);
 void writeHighScore(int addr, uint32_t score);
+
+// ==================== INTERRUPTS ====================
+extern DebouncedButton* _btn1Ptr;
+extern DebouncedButton* _btn2Ptr;
+extern DebouncedButton* _joyBtnPtr;
+void enableButtonInterrupts(int joyPin, int btn1Pin, int btn2Pin);
 
 // ==================== INIT ====================
 void initHardware();

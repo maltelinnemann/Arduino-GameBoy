@@ -6,6 +6,7 @@
 #include "space_invaders.h"
 #include "dino_jump.h"
 #include "vampire_survivors.h"
+#include "origin.h"
 
 // ==================== GLOBAL INSTANCES ====================
 SoundManager soundManager;
@@ -15,6 +16,7 @@ Homescreen homescreen;
 SpaceInvadersGame spaceInvaders;
 DinoJumpGame dinoJump;
 VampireSurvivorsGame vampireSurvivors;
+OriginGame originGame;
 
 enum class AppState : uint8_t {
     HOMESCREEN,
@@ -38,7 +40,14 @@ void setup() {
     input.btn2.init(PIN_BTN2, INPUT);
     input.joyButton.init(PIN_JOY_SW, INPUT_PULLUP);
 
+    // Register button pointers for ISR access
+    _btn1Ptr = &input.btn1;
+    _btn2Ptr = &input.btn2;
+    _joyBtnPtr = &input.joyButton;
+    enableButtonInterrupts(PIN_JOY_SW, PIN_BTN1, PIN_BTN2);
+
     // Register games
+    homescreen.addGame(&originGame, ICON_ORIGIN);
     homescreen.addGame(&spaceInvaders, ICON_SPACE_INVADERS);
     homescreen.addGame(&dinoJump, ICON_DINO_JUMP);
     homescreen.addGame(&vampireSurvivors, ICON_VAMPIRE_SURVIVORS);
@@ -47,6 +56,7 @@ void setup() {
     spaceInvaders.setup();
     dinoJump.setup();
     vampireSurvivors.setup();
+    originGame.setup();
 
     // Seed random from unconnected analog pin + runtime
     randomSeed(analogRead(A2) ^ analogRead(A3) ^ micros());

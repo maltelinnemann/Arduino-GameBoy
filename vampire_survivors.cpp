@@ -8,12 +8,11 @@ extern SoundManager soundManager;
 const VSUpgrade VampireSurvivorsGame::UPGRADE_POOL[UPGRADE_POOL_SIZE] = {
     {0, "Vitality",   "Max HP +1"},
     {1, "Rapid Fire", "Fire rate +20%"},
-    {2, "Multi Shot", "+1 bullet"},
-    {3, "Swiftness",  "Move speed +10%"},
-    {4, "Power Up",   "Damage +1"},
-    {5, "Heal",       "Restore 2 HP"},
-    {6, "Spread",     "+1 bullet & fan"},
-    {7, "Rear Shot",  "Shoot behind"},
+    {2, "Swiftness",  "Move speed +10%"},
+    {3, "Power Up",   "Damage +1"},
+    {4, "Heal",       "Restore 2 HP"},
+    {5, "Spread",     "+1 bullet & fan"},
+    {6, "Rear Shot",  "Shoot behind"},
 };
 
 VampireSurvivorsGame::VampireSurvivorsGame() {
@@ -27,7 +26,10 @@ void VampireSurvivorsGame::setup() {
     _menuSelection = 0;
     _menuEnteredTime = millis();
     _highScore = readHighScore(EEPROM_VS_SCORE_ADDR);
-    if (_highScore > 9999) _highScore = 0;
+    if (_highScore > 9999) {
+        _highScore = 0;
+        EEPROM.put(EEPROM_VS_SCORE_ADDR, (uint32_t)0); // fix corrupted EEPROM
+    }
 }
 
 // ==================== MAIN LOOP ====================
@@ -481,14 +483,17 @@ void VampireSurvivorsGame::checkCollisions() {
 // ==================== UPGRADES ====================
 
 void VampireSurvivorsGame::pickUpgrades() {
-    // Pick 3 unique random upgrades
+    // Build pool of available upgrade indices, excluding rear shot if already owned
+    int poolSize = UPGRADE_POOL_SIZE;
+    if (_player.backShot) poolSize--; // exclude Rear Shot (id 7, last in pool)
+
     bool used[UPGRADE_POOL_SIZE];
     for (int i = 0; i < UPGRADE_POOL_SIZE; i++) used[i] = false;
 
     for (int i = 0; i < UPGRADE_OPTIONS; i++) {
         int idx;
         do {
-            idx = random(0, UPGRADE_POOL_SIZE);
+            idx = random(0, poolSize);
         } while (used[idx]);
         used[idx] = true;
         _upgrades[i] = UPGRADE_POOL[idx];
@@ -499,12 +504,11 @@ void VampireSurvivorsGame::applyUpgrade(uint8_t id) {
     switch (id) {
         case 0: _player.maxHp += 1; _player.hp = min(_player.hp + 1, _player.maxHp); break;
         case 1: _player.fireRateMs = max(120, (int)(_player.fireRateMs * 0.8f)); break;
-        case 2: _player.bulletCount = min(6, _player.bulletCount + 1); break;
-        case 3: _player.moveSpeed += 0.2f; break;
-        case 4: _player.damage += 1; break;
-        case 5: _player.hp = min(_player.hp + 2, _player.maxHp); break;
-        case 6: _player.spreadShot = true; _player.bulletCount = min(6, _player.bulletCount + 1); break;
-        case 7: _player.backShot = true; break;
+        case 2: _player.moveSpeed += 0.2f; break;
+        case 3: _player.damage += 1; break;
+        case 4: _player.hp = min(_player.hp + 2, _player.maxHp); break;
+        case 5: _player.spreadShot = true; _player.bulletCount = min(6, _player.bulletCount + 1); break;
+        case 6: _player.backShot = true; break;
     }
 }
 
@@ -528,11 +532,6 @@ void VampireSurvivorsGame::drawMenu() {
 
 void VampireSurvivorsGame::drawGame() {
     u8g2.clearBuffer();
-
-    // Room background (subtle grid lines)
-    for (int gx = 0; gx < 128; gx += 16) {
-        u8g2.drawVLine(gx, 0, 64);
-    }
 
     drawEnemies();
     drawBullets();
@@ -623,22 +622,26 @@ void VampireSurvivorsGame::drawUpgradeSelect() {
     u8g2.drawFrame(0, 0, 128, 64);
 
     u8g2.setFont(u8g2_font_6x10_tf);
-    drawCenteredStr(12, "CHOOSE UPGRADE");
+    drawCenteredStr(10, "CHOOSE UPGRADE");
+
+    u8g2.drawHLine(4, 15, 120);
 
     u8g2.setFont(u8g2_font_5x7_tf);
     for (int i = 0; i < UPGRADE_OPTIONS; i++) {
-        int y = 22 + i * 14;
+        int y = 21 + i * 14;
         bool sel = (i == _upgradeSelection);
         if (sel) {
-            u8g2.drawBox(4, y - 2, 120, 13);
+            u8g2.drawBox(4, y - 3, 120, 14);
             u8g2.setDrawColor(0);
         }
-        u8g2.drawStr(8, y + 5, _upgrades[i].name);
-        u8g2.drawStr(72, y + 5, _upgrades[i].desc);
+        // Icon centered vertically in selection box
+        const uint8_t* icon = getUpgradeIcon(_upgrades[i].id);
+        u8g2.drawXBMP(10, y, 8, 8, icon);
+        // Description vertically centered with icon
+        u8g2.drawStr(24, y + 7, _upgrades[i].desc);
         if (sel) u8g2.setDrawColor(1);
     }
 
-    u8g2.drawHLine(4, 18, 120);
     u8g2.sendBuffer();
 }
 
@@ -665,12 +668,8 @@ void VampireSurvivorsGame::drawGameOver() {
 
     u8g2.setFont(u8g2_font_6x10_tf);
     char buf[32];
-    snprintf(buf, sizeof(buf), "Room reached: %d", _room);
-    drawCenteredStr(30, buf);
-
-    bool isNew = _room >= (int)_highScore && _room > 0;
-    snprintf(buf, sizeof(buf), "Best: %lu%s", _highScore, isNew ? " NEW!" : "");
-    drawCenteredStr(42, buf);
+    snprintf(buf, sizeof(buf), "Room: %d", _room);
+    drawCenteredStr(34, buf);
 
     drawCenteredStr(56, "Btn1: Menu  Btn2: Home");
     u8g2.sendBuffer();
