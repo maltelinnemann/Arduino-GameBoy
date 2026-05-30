@@ -31,15 +31,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **App state machine** (`GameBoy.ino`): Two states — `HOMESCREEN` and `PLAYING_GAME`. The main loop reads inputs every iteration, runs game logic at 30 FPS (33ms frame timer), and dispatches to either `homescreen.loop()` or `currentGame->loop()`. Sound updates happen every iteration (not just on frames).
 
-**Input system** (`hardware.h`): `DebouncedButton` provides edge detection with `consumePress()` (read + clear latched edge — always use this in game logic, never `pressed()`). `held()` for continuous actions. Debounce is 30ms. `InputState` wraps all three buttons plus joystick analog values with directional helpers (`left()`/`right()`/`up()`/`down()` — 300/700 thresholds).
+**Input system** (`hardware.h`): `DebouncedButton` provides edge detection with `consumePress()` (read + clear latched edge — always use this in game logic, never `pressed()`). `held()` for continuous actions. Debounce is 30ms. `InputState` wraps all three buttons plus joystick analog values with directional helpers (`left()`/`right()`/`up()`/`down()` — 300/700 thresholds). **Note: joystick axes are physically inverted** — `left()` reads `joyX > 700` and `right()` reads `joyX < 300` (same inversion for Y). This is a hardware wiring quirk; don't "fix" it.
 
 **Button interrupts** (`hardware.cpp`): Joy SW (pin 2) uses INT4 (external interrupt). BTN1/BTN2 (on PORTC) use PCINT2 pin-change interrupt on PCI2 vector. A background pin-change ISR sets `irqFired` flags that `DebouncedButton::update()` polls — no debouncing happens in ISR context. PCINT2 ISR must mask the specific pins (PC7/PC5) since all PORTC changes share the same vector.
 
 **EEPROM** (`hardware.cpp`): High scores stored as `uint32_t` at addresses 2 (Infinity), 6 (Phallus), 10 (Godly), 14 (Origin), 18 (Eternal). Magic number `0xAB01` at address 0 validates initialized EEPROM. `writeHighScore()` only writes if the new score is higher. When adding a new EEPROM address after the magic number was already written in a previous firmware version, add a sanity check in `setup()` to reset garbage values (e.g., `if (_highScore > 9999) _highScore = 0;`).
 
-**Display** (`hardware.h`): Single global `u8g2` instance (full framebuffer mode, 1KB RAM). All drawing uses U8g2 primitives or `drawXBMP()` for PROGMEM bitmaps. The u8g2 object is declared `extern` in the header for all files to use. Screen is **128x64 pixels**.
+**Display** (`hardware.h`): Single global `u8g2` instance (full framebuffer mode, 1KB RAM). All drawing uses U8g2 primitives or `drawXBMP()` for PROGMEM bitmaps (NOT `drawXBM()` or `drawBitmap()` — those expect RAM pointers and will crash/glitch). The u8g2 object is declared `extern` in the header for all files to use. Screen is **128x64 pixels**.
 
-**Sound** (`sound.h`): `SoundManager` is non-blocking — call `beep(ms)` to start, `update()` every loop iteration to turn off when the timer expires. Works with active buzzers (just digital HIGH/LOW, no PWM needed).
+**Sound** (`sound.h`): `SoundManager` is non-blocking — call `beep(ms)` to start, `update()` every loop iteration to turn off when the timer expires. Works with active buzzers (just digital HIGH/LOW, no PWM needed). `isPlaying()` returns whether a beep is currently active.
+
+## Common Game Patterns
+
+**Object pools**: Use fixed-size arrays instead of dynamic allocation. Phallus uses a 5-bullet pool (`DJBullet`), Godly uses a 20-bullet pool (`VSBullet` with `playerOwned`), Eternal uses 6-enemy / 10-coin / 20-particle pools. Each pool entry has an `alive` flag; iterate+skip dead entries, spawn by finding the first dead slot.
+
+**Invulnerability frames**: After taking damage, set `_invulnUntil = millis() + DURATION` and check `millis() < _invulnUntil` before applying damage. Used in Infinity, Eternal, and Godly.
+
+**Game-over input guard**: After entering GAME_OVER, record `_gameOverTime = millis()` and ignore btn2 (exit) for the first ~500ms to prevent accidental exits from a button held during gameplay. Btn1 (return to menu) needs no guard.
 
 ## Critical Drawing Pattern: Avoid Pause Flicker
 

@@ -14,8 +14,8 @@ A GameBoy-style handheld gaming device built on Arduino Mega 2560.
 | Joystick VRX | A0 |
 | Joystick VRY | A1 |
 | Joystick SW | 2 |
-| Button 1 | 12 (shoot/jump) |
-| Button 2 | 13 (pause) |
+| Button 1 | 32 (shoot/jump) |
+| Button 2 | 30 (pause) |
 | Buzzer | 40 |
 
 ## Build
@@ -29,8 +29,11 @@ If the OLED uses SH1106 instead of SSD1309, swap the constructor in `hardware.h`
 
 ## Games
 
-- **Space Invaders** — Waves of enemies (3 types), power-ups, lives, high score
-- **Dino Jump** — Chrome dino-style endless runner with jump physics
+- **Origin** — Classic snake game on a 16x8 grid with speed boost
+- **Infinity** — Space shooter with waves of enemies (3 types), power-ups, lives, high score
+- **Phallus** — Chrome dino-style endless runner with jump physics
+- **Godly** — Room-based roguelike (Vampire Survivors style) with upgrade system
+- **Eternal** — Vertical rocket-launch game with physics, coins, and upgrades
 
 ## Controls
 
