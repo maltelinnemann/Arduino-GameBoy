@@ -3,8 +3,9 @@ Arduino Mega 2560/R3
 2.42 inch OLED Display / Pins: CS=10, DC=9, RS=8, SDA=51, SCK=52
 Joystick with button (when pressing the joystick down) / Pins: VRX=A0, VRY=A1, SW=2
 2x Pull down buttons / Pins: 12 & 13
-Active Buzzer / Pin: 40
-
+Active Buzzer / Pin: 40hb c xf
+   
+   
 
 Project:
 A gameboy type of device with a homescreen where you can choose between a variety of fun games.

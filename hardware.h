@@ -17,8 +17,8 @@
 #define PIN_JOY_SW     2
 
 // External pull-down buttons
-#define PIN_BTN1      12
-#define PIN_BTN2      13
+#define PIN_BTN1      32
+#define PIN_BTN2      30
 
 // Active buzzer
 #define PIN_BUZZER    40
@@ -53,10 +53,10 @@ struct InputState {
     DebouncedButton btn2;
     DebouncedButton joyButton;
 
-    bool left() const  { return joyX < 300; }
-    bool right() const { return joyX > 700; }
-    bool up() const    { return joyY < 300; }
-    bool down() const  { return joyY > 700; }
+    bool left() const  { return joyX > 700; }
+    bool right() const { return joyX < 300; }
+    bool up() const    { return joyY > 700; }
+    bool down() const  { return joyY < 300; }
 };
 
 // ==================== EEPROM HIGH SCORES ====================
@@ -66,6 +66,7 @@ struct InputState {
 #define EEPROM_DJ_SCORE_ADDR  6
 #define EEPROM_VS_SCORE_ADDR  10
 #define EEPROM_OG_SCORE_ADDR  14
+#define EEPROM_ET_SCORE_ADDR  18
 
 void initEEPROM();
 uint32_t readHighScore(int addr);

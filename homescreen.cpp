@@ -226,16 +226,16 @@ void Homescreen::drawBootAnimation() {
             break;
         }
         case 2: {
-            // "LINNEMANN" text reveal, one char at a time
+            // "PIXEL" text reveal, one char at a time
             float t2 = (elapsed - 800) / 700.0f;
             if (t2 > 1.0f) t2 = 1.0f;
-            int totalChars = 9; // L I N N E M A N N
+            int totalChars = 5; // P I X E L
             int shown = (int)(t2 * totalChars) + 1;
             if (shown > totalChars) shown = totalChars;
 
             u8g2.setFont(u8g2_font_8x13B_tf);
-            const char* title = "LINNEMANN";
-            char buf[8];
+            const char* title = "PIXEL";
+            char buf[6];
             for (int c = 0; c < shown; c++) {
                 buf[c] = title[c];
                 buf[c + 1] = '\0';
@@ -259,7 +259,7 @@ void Homescreen::drawBootAnimation() {
             if (t3 > 1.0f) t3 = 1.0f;
 
             u8g2.setFont(u8g2_font_8x13B_tf);
-            const char* title = "LINNEMANN";
+            const char* title = "PIXEL";
             int strW = u8g2.getStrWidth(title);
             u8g2.drawStr(64 - strW / 2, 22, title);
 

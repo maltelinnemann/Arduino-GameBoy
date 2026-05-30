@@ -20,16 +20,16 @@ ISR(INT4_vect) {
     if (_joyBtnPtr) _joyBtnPtr->irqFired = true;
 }
 
-// Track last PORTB state for PCINT to detect which pin changed
-static volatile uint8_t _lastPinB = 0;
+// Track last PORTC state for PCINT to detect which pin changed
+static volatile uint8_t _lastPinC = 0;
 
-// Pins 12 (PB6) and 13 (PB7) use PCINT0
-ISR(PCINT0_vect) {
-    uint8_t current = PINB;
-    uint8_t changed = _lastPinB ^ current;
-    _lastPinB = current;
-    if (changed & (1 << PB6) && _btn1Ptr) _btn1Ptr->irqFired = true;
-    if (changed & (1 << PB7) && _btn2Ptr) _btn2Ptr->irqFired = true;
+// Pins 30 (PC7) and 32 (PC5) use PCINT2
+ISR(PCINT2_vect) {
+    uint8_t current = PINC;
+    uint8_t changed = _lastPinC ^ current;
+    _lastPinC = current;
+    if (changed & (1 << PC7) && _btn1Ptr) _btn1Ptr->irqFired = true;
+    if (changed & (1 << PC5) && _btn2Ptr) _btn2Ptr->irqFired = true;
 }
 
 void enableButtonInterrupts(int joyPin, int btn1Pin, int btn2Pin) {
@@ -37,9 +37,9 @@ void enableButtonInterrupts(int joyPin, int btn1Pin, int btn2Pin) {
     EIMSK |= (1 << INT4);
     EICRB |= (1 << ISC40); // Any logical change
 
-    // Pins 12 (PB6) and 13 (PB7) — Pin change interrupt PCI0
-    PCMSK0 |= (1 << PCINT6) | (1 << PCINT7);
-    PCICR |= (1 << PCIE0);
+    // Pins 30 (PC7) and 32 (PC5) — Pin change interrupt PCI2
+    PCMSK2 |= (1 << PCINT23) | (1 << PCINT21);
+    PCICR |= (1 << PCIE2);
 }
 
 // ==================== DEBOUNCED BUTTON ====================
@@ -129,6 +129,7 @@ void initEEPROM() {
         EEPROM.put(EEPROM_DJ_SCORE_ADDR, zero);
         EEPROM.put(EEPROM_VS_SCORE_ADDR, zero);
         EEPROM.put(EEPROM_OG_SCORE_ADDR, zero);
+        EEPROM.put(EEPROM_ET_SCORE_ADDR, zero);
     }
 }
 

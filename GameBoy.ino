@@ -7,6 +7,7 @@
 #include "dino_jump.h"
 #include "vampire_survivors.h"
 #include "origin.h"
+#include "eternal.h"
 
 // ==================== GLOBAL INSTANCES ====================
 SoundManager soundManager;
@@ -17,6 +18,7 @@ SpaceInvadersGame spaceInvaders;
 DinoJumpGame dinoJump;
 VampireSurvivorsGame vampireSurvivors;
 OriginGame originGame;
+EternalGame eternalGame;
 
 enum class AppState : uint8_t {
     HOMESCREEN,
@@ -51,15 +53,17 @@ void setup() {
     homescreen.addGame(&spaceInvaders, ICON_SPACE_INVADERS);
     homescreen.addGame(&dinoJump, ICON_DINO_JUMP);
     homescreen.addGame(&vampireSurvivors, ICON_VAMPIRE_SURVIVORS);
+    homescreen.addGame(&eternalGame, ICON_ETERNAL);
 
     homescreen.setup();
     spaceInvaders.setup();
     dinoJump.setup();
     vampireSurvivors.setup();
     originGame.setup();
+    eternalGame.setup();
 
     // Seed random from unconnected analog pin + runtime
-    randomSeed(analogRead(A2) ^ analogRead(A3) ^ micros());
+    randomSeed(analogRead(A2) ^ analogRead(A3) ^ micros());  
 
     soundManager.beep(30);
 }

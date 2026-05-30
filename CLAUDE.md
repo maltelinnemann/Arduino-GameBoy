@@ -21,8 +21,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | Joystick VRX | A0 | Analog |
 | Joystick VRY | A1 | Analog |
 | Joystick SW | 2 | INPUT_PULLUP |
-| Button 1 | 12 | External pull-down (shoot/jump/confirm) |
-| Button 2 | 13 | External pull-down (pause/back) |
+| Button 1 | 32 | External pull-down (shoot/jump/confirm) |
+| Button 2 | 30 | External pull-down (pause/back) |
 | Buzzer | 40 | Active buzzer (digital HIGH=on) |
 
 ## Architecture
@@ -33,7 +33,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Input system** (`hardware.h`): `DebouncedButton` provides edge detection with `consumePress()` (read + clear latched edge — always use this in game logic, never `pressed()`). `held()` for continuous actions. Debounce is 30ms. `InputState` wraps all three buttons plus joystick analog values with directional helpers (`left()`/`right()`/`up()`/`down()` — 300/700 thresholds).
 
-**EEPROM** (`hardware.cpp`): High scores stored as `uint32_t` at addresses 2 (Infinity), 6 (Phallus), 10 (Godly). Magic number `0xAB01` at address 0 validates initialized EEPROM. `writeHighScore()` only writes if the new score is higher. When adding a new EEPROM address after the magic number was already written in a previous firmware version, add a sanity check in `setup()` to reset garbage values (e.g., `if (_highScore > 9999) _highScore = 0;`).
+**Button interrupts** (`hardware.cpp`): Joy SW (pin 2) uses INT4 (external interrupt). BTN1/BTN2 (on PORTC) use PCINT2 pin-change interrupt on PCI2 vector. A background pin-change ISR sets `irqFired` flags that `DebouncedButton::update()` polls — no debouncing happens in ISR context. PCINT2 ISR must mask the specific pins (PC7/PC5) since all PORTC changes share the same vector.
+
+**EEPROM** (`hardware.cpp`): High scores stored as `uint32_t` at addresses 2 (Infinity), 6 (Phallus), 10 (Godly), 14 (Origin), 18 (Eternal). Magic number `0xAB01` at address 0 validates initialized EEPROM. `writeHighScore()` only writes if the new score is higher. When adding a new EEPROM address after the magic number was already written in a previous firmware version, add a sanity check in `setup()` to reset garbage values (e.g., `if (_highScore > 9999) _highScore = 0;`).
 
 **Display** (`hardware.h`): Single global `u8g2` instance (full framebuffer mode, 1KB RAM). All drawing uses U8g2 primitives or `drawXBMP()` for PROGMEM bitmaps. The u8g2 object is declared `extern` in the header for all files to use. Screen is **128x64 pixels**.
 
@@ -78,7 +80,7 @@ Calling `drawPlaying()` from `drawPause()` causes visible flicker because the un
 
 ## Game State Machine
 
-All three games follow this state pattern:
+All games follow this state pattern (Eternal adds an `UPGRADE` state between PLAYING and PAUSED):
 
 ```
 MENU → PLAYING → PAUSED → (back to PLAYING or MENU)
@@ -104,6 +106,12 @@ Side-scrolling runner. Player auto-runs at PLAYER_X=20, jumps with btn1. 4 obsta
 
 ### Godly (`vampire_survivors.h/cpp`)
 Room-based roguelike. Player moves with joystick, auto-aims at nearest enemy. Each room spawns `5 + room*3` enemies from screen edges. 4 enemy types (basic, fast, tank, shooter). After clearing a room, 3 random upgrades are offered from a pool of 8 (Vitality, Rapid Fire, Multi Shot, Swiftness, Power Up, Heal, Spread, Rear Shot). High score = best room reached (not cumulative points). Bullets use a 20-bullet pool (`VSBullet` with playerOwned flag). `findNearestEnemy()` returns index or -1; always check `>= 0` (index 0 is a valid enemy).
+
+### Origin (`origin.h/cpp`)
+Classic snake game on a 16x8 grid. Snake grows when eating food (`_length` capped at `MAX_LENGTH=100`). Direction changed via joystick — must differ from current direction to prevent reversal. Speed increases as food is eaten (`_moveIntervalMs` decreases). Boost mode with btn1 held doubles movement speed. `OGState` enum: MENU → PLAYING → PAUSED → GAME_OVER.
+
+### Eternal (`eternal.h/cpp`)
+Vertical rocket-launch game. Player controls a rocket climbing upward through enemy-filled sky, collecting coins. Upgrade system with 4 rocket types (costs coins) and 3 stat trees (fuel, thrust, hull) each with 3 levels. Physics-based movement with gravity, thrust, terminal velocity, and fuel consumption. Camera scrolls upward following the player. 3 enemy types (bird, UFO, satellite) rendered with sprite primitives. Particle effects for rocket flame and collisions. Object pools: 6 enemies, 10 coins, 20 particles. `ETState`: MENU → PLAYING → UPGRADE → PAUSED → GAME_OVER. Invulnerability frames after taking damage. High score = max altitude reached.
 
 ## Adding a New Game
 
