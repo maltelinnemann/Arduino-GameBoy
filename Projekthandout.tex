@@ -22,7 +22,7 @@
 \renewcommand{\headrulewidth}{0.4pt}
 
 % Title page info macros
-\newcommand{\teilnehmer}{\textcolor{red}{\textbf{[Namen der Teilnehmer]}}}
+\newcommand{\teilnehmer}{{\textbf{Malte Linnemann, Marcel Schmidt, Jakob Münch}}}
 \newcommand{\datum}{29. Mai 2026}
 
 \begin{document}
@@ -35,59 +35,50 @@
 \begin{center}
     {\LARGE \textbf{Fachinformatiker/in}}\\[0.3cm]
     {\Large Lernfeld 7 – Cyber-physische Systeme ergänzen}\\[0.3cm]
-    {\large LS: Durchführung eines Projektes mit Hilfe des Arduinos}\\[2cm]
+    {\large Durchführung eines Projektes mit Hilfe des Arduinos}\\[2cm]
 
     {\Huge \textbf{Projekthandout}}\\[0.5cm]
-    {\Large Arduino GameBoy – Handheld-Spielekonsole}\\[3cm]
+    {\Large Arduino PIXEL – Handheld-Spielekonsole}\\[3cm]
 
     \begin{tabular}{rl}
         \textbf{Teilnehmer:} & \teilnehmer \\[0.3cm]
         \textbf{Datum:}      & \datum \\[0.3cm]
-        \textbf{Klasse:}     & \textcolor{red}{\textbf{[Klasse eintragen]}} \\[0.3cm]
-        \textbf{Betreuer:}   & \textcolor{red}{\textbf{[Name der Lehrkraft]}}
+        \textbf{Klasse:}     & {\textbf{IFA41}} \\[0.3cm]
+        \textbf{Betreuer:}   & {\textbf{Herr Diekbreder}}
     \end{tabular}
 
     \vfill
-    \small Team Informationstechnik (2026)
+    \small BBS Brinkstraße
 \end{center}
 \end{titlepage}
 
 % ============================================================
 % 1. FORMULIERUNG DES THEMAS
 % ============================================================
-\section{Formulierung des Themas}
-
 \subsection{Thema}
-Entwicklung einer Handheld-Spielekonsole auf Basis des Arduino Mega 2560 – nachfolgend
-\textit{Arduino GameBoy} genannt. Das Gerät vereint mehrere Spiele in einem kompakten,
-tragbaren Gehäuse und wird über ein OLED-Display, einen analogen Joystick sowie zwei
-Aktionstasten bedient.
+
+Im Rahmen dieses Projekts wurde eine tragbare Spielekonsole mit einem Arduino Mega 2560 entwickelt. Die Konsole trägt den Namen \textit{Arduino PIXEL}. Sie verfügt über ein OLED Display, einen Joystick und zwei Tasten zur Steuerung. Auf der Konsole können mehrere selbst programmierte Spiele gespielt werden.
 
 \subsection{Projektidee und Motivation}
-Ziel des Projektes ist die Konzeption und Umsetzung eines cyber-physischen Systems, das
-die im Unterricht erarbeiteten Grundlagen – Ansteuerung von Displays, Verwendung von
-Tastern, Einsatz von Interrupts und Auslesen analoger Sensoren – in einer praktischen
-Anwendung bündelt. Die Idee einer Spielekonsole wurde gewählt, weil sie einerseits einen
-hohen motivierenden Charakter besitzt und andererseits eine Vielzahl technischer
-Herausforderungen bietet: Echtzeitsteuerung, Speicherverwaltung, Zustandsautomaten und
-eine modulare Softwarearchitektur.
+
+Ziel des Projekts war es, die im Unterricht behandelten Inhalte praktisch anzuwenden. Dazu gehören unter anderem die Nutzung von Displays, das Auslesen von Sensoren, die Verarbeitung von Tastereingaben und die Programmierung von Mikrocontrollern.
+
+Die Idee einer Spielekonsole wurde gewählt, weil dabei viele verschiedene Funktionen kombiniert werden können. Gleichzeitig bietet das Projekt genügend Herausforderungen, um die eigenen Programmierkenntnisse zu erweitern. Dazu zählen zum Beispiel die Verwaltung mehrerer Spielzustände, die Verarbeitung von Benutzereingaben und die Entwicklung einer übersichtlichen Softwarestruktur.
 
 \subsection{Projektziele}
-Die fertige Konsole soll folgende Anforderungen erfüllen:
+
+Die fertige Konsole sollte folgende Anforderungen erfüllen:
+
 \begin{itemize}[noitemsep]
-    \item \textbf{Homescreen} mit horizontaler Spielauswahl über animierte Karten
-    \item \textbf{Mehrere Spiele:} Snake (,,Origin``), Space Invaders (,,Infinity``),
-          Dino Jump (,,Phallus``), Vampire Survivors (,,Godly``) und ein
-          Raketen-Höhenspiel (,,Eternal``)
-    \item \textbf{Pause-Funktion} in jedem Spiel mit Optionen für Weiter, Neustart
-          und Zurück zum Menü
-    \item \textbf{Highscore-Speicherung} im EEPROM – auch nach Stromverlust erhalten
-    \item \textbf{Soundausgabe} über einen aktiven Buzzer für akustisches Feedback
-    \item \textbf{Erweiterbare Architektur:} Neue Spiele lassen sich mit geringem
-          Aufwand über eine einheitliche Schnittstelle hinzufügen
-    \item \textbf{Stabiles 30 FPS Gameplay} trotz begrenzter Rechenleistung des
-          Mikrocontrollers
+\item Startbildschirm mit Auswahl der verfügbaren Spiele
+\item Mehrere spielbare Spiele auf einem Gerät
+\item Pausenmenü mit den Optionen Weiter, Neustart und Zurück zum Hauptmenü
+\item Speicherung von Highscores auch nach dem Ausschalten
+\item Akustische Rückmeldungen über einen Buzzer
+\item Einfache Erweiterung um weitere Spiele
+\item Flüssiges Spielerlebnis ohne sichtbare Verzögerungen
 \end{itemize}
+
 
 % ============================================================
 % 2. RESSOURCEN UND ABLAUFPLANUNG
@@ -100,18 +91,17 @@ Die fertige Konsole soll folgende Anforderungen erfüllen:
 \centering
 \begin{tabularx}{\textwidth}{|l|c|X|}
 \hline
-\textbf{Komponente}               & \textbf{Anzahl} & \textbf{Kosten (ca.)} \\
+\textbf{Komponente}               & \textbf{Anzahl} & \textbf{Kosten in € (ca.)} \\
 \hline
-Arduino Mega 2560 (Rev. 3)        & 1 & \textcolor{red}{\textbf{[EUR eintragen]}} \\
-2.42\textsuperscript{''} OLED-Display (SSD1309, SPI) & 1 &
-    \textcolor{red}{\textbf{[EUR eintragen]}} \\
-Joystick-Modul (VRX, VRY, SW)     & 1 & \textcolor{red}{\textbf{[EUR eintragen]}} \\
-Taster (Pull-Down)                & 2 & \textcolor{red}{\textbf{[EUR eintragen]}} \\
-Aktiver Buzzer                    & 1 & \textcolor{red}{\textbf{[EUR eintragen]}} \\
-Widerstände, Jumper-Kabel, Steckbrett & -- & \textcolor{red}{\textbf{[EUR eintragen]}} \\
-LEGO-Steine (Gehäuse)             & -- & \textcolor{red}{\textbf{[EUR eintragen]}} \\
+Arduino Mega 2560 (Rev. 3)        & 1 & 50 \\
+2.42\textsuperscript{''} OLED-Display (SSD1309, SPI) & 1 & 18 \\
+Joystick-Modul (VRX, VRY, SW)     & 1 & 3 \\
+Taster (Pull-Down)                & 2 & 0,50 \\
+Aktiver Buzzer                    & 1 & 1 \\
+Widerstände, Jumper-Kabel, Steckbrett & -- & 5 \\
+LEGO-Steine (Gehäuse)             & -- & 5 \\
 \hline
-\multicolumn{2}{|r|}{\textbf{Gesamtkosten:}} & \textcolor{red}{\textbf{[EUR eintragen]}} \\
+\multicolumn{2}{|r|}{\textbf{Gesamtkosten:}} & 82,50 \\
 \hline
 \end{tabularx}
 \caption{Hardware-Komponenten und Kosten}
@@ -119,26 +109,22 @@ LEGO-Steine (Gehäuse)             & -- & \textcolor{red}{\textbf{[EUR eintragen
 
 \subsection{Zeitliche Ablaufplanung}
 
-Der Bearbeitungszeitraum erstreckte sich vom \textcolor{red}{\textbf{[Startdatum]}} bis zum
-29.05.2026. Die folgende Tabelle gibt einen Überblick über die wesentlichen Projektphasen.
+Der Bearbeitungszeitraum erstreckte sich vom 22.04.2026 bis zum
+03.06.2026. Die folgende Tabelle gibt einen Überblick über die wesentlichen Projektphasen.
 
 \vspace{0.3cm}
 \begin{tabularx}{\textwidth}{|l|X|l|}
 \hline
-\textbf{Phase} & \textbf{Tätigkeit} & \textbf{Zeitraum} \\
+\textbf{Phase} & \textbf{Tätigkeit} & \textbf{Stunden} \\
 \hline
 1 & Konzeption: Anforderungen definieren, Hardware auswählen,
-    Spieleideen skizzieren & \textcolor{red}{\textbf{[KW X]}} \\
+    Spieleideen skizzieren & 5 \\
 2 & Basisaufbau: Display in Betrieb nehmen, Joystick und Taster
-    anbinden, Software-Grundgerüst & \textcolor{red}{\textbf{[KW X]}} \\
-3 & Spieleentwicklung: Homescreen, Space Invaders, Dino Jump &
-    \textcolor{red}{\textbf{[KW X]}} \\
-4 & Erweiterung: Vampire Survivors, Snake, Eternal &
-    \textcolor{red}{\textbf{[KW X]}} \\
-5 & Gehäusebau, Feinabstimmung, Pause-Logic, Highscore-EEPROM &
-    \textcolor{red}{\textbf{[KW X]}} \\
-6 & Dokumentation, Präsentation, Videoerstellung &
-    \textcolor{red}{\textbf{[KW X]}} \\
+    anbinden, Software-Grundgerüst & 4 \\
+3 & Spieleentwicklung: Homescreen, Space Invaders, Dino Jump &  \\
+4 & Erweiterung: Vampire Survivors, Snake, Eternal & 4 \\
+5 & Gehäusebau, Feinabstimmung, Pause-Logic, Highscore-EEPROM & 3 \\
+6 & Dokumentation, Präsentation, Videoerstellung & 4 \\
 \hline
 \end{tabularx}
 
@@ -149,39 +135,25 @@ Der Bearbeitungszeitraum erstreckte sich vom \textcolor{red}{\textbf{[Startdatum
 
 \subsection{Vorgehensweise und Prozessschritte}
 
-Die Entwicklung folgte einem iterativen Ansatz. Zunächst wurde die grundlegende
-Hardware-Umgebung aufgebaut und getestet (Display-Ansteuerung, Eingabe über
-Joystick/Taster). Anschließend entstand eine modulare Software-Architektur mit einer
-abstrakten \texttt{Game}-Basisklasse, die es erlaubt, Spiele unabhängig voneinander zu
-entwickeln und über einen zentralen Zustandsautomaten zu verwalten.
+Zu Beginn wurden die benötigten Hardwarekomponenten aufgebaut und einzeln getestet. Dabei wurde geprüft, ob Display, Joystick, Taster und Buzzer korrekt funktionieren.
+
+Anschließend wurde das Grundgerüst der Software entwickelt. Dabei wurde darauf geachtet, dass die einzelnen Spiele voneinander getrennt bleiben. Dadurch können neue Spiele später einfacher hinzugefügt werden.
+
+Die Umsetzung erfolgte in mehreren Schritten:
 
 \begin{enumerate}[noitemsep]
-    \item \textbf{Hardware-Aufbau:} Verkabelung aller Komponenten gemäß Schaltplan (s.~Anlage).
-          Das OLED-Display kommuniziert per Hardware-SPI (MOSI=51, SCK=52), der Joystick
-          liefert analoge X/Y-Werte über A0/A1, der Joystick-Taster hängt an Pin~2
-          (INPUT\_PULLUP). Zwei externe Taster mit Pull-Down-Widerständen an Pin~30 und~32
-          dienen als Aktions- bzw. Pause-Taste. Ein aktiver Buzzer an Pin~40 erzeugt
-          akustische Rückmeldungen.
-    \item \textbf{Software-Architektur:} Trennung in Hardware-Abstraktion
-          (\texttt{hardware.h/.cpp}), Spiele-Basisklasse (\texttt{game\_base.h}),
-          Sound-Manager (\texttt{sound.h/.cpp}), Homescreen (\texttt{homescreen.h/.cpp})
-          sowie je eine Header/Source-Kombination pro Spiel. Das Hauptprogramm
-          (\texttt{GameBoy.ino}) implementiert einen Zwei-Zustands-Automaten
-          (Homescreen $\leftrightarrow$ Spiel).
-    \item \textbf{Eingabesystem:} Implementierung einer entprellten Button-Klasse mit
-          Flankenerkennung (\texttt{consumePress()}). Zusätzlich werden
-          Pin-Change-Interrupts (PCINT2 für PORTC, INT4 für Joystick-SW) genutzt, um
-          Tastendrücke auch während laufender Spiel-Logik zuverlässig zu erfassen.
-    \item \textbf{Display-Rendering:} Verwendung der U8g2-Bibliothek im Full-Framebuffer-Modus.
-          Alle Spiele-Grafiken werden mit schnellen Zeichenprimitiven
-          (\texttt{drawBox()}, \texttt{drawDisc()}, \texttt{drawXBMP()}) umgesetzt,
-          verzögerungsanfällige Operationen wie \texttt{drawLine()} wurden vermieden.
-    \item \textbf{Spieleentwicklung:} Jedes Spiel implementiert eine eigene
-          Zustandsmaschine (Menü $\rightarrow$ Spielend $\rightarrow$ Pausiert
-          $\rightarrow$ Game-Over) und trennt Zeichenmethoden strikt in
-          \texttt{drawGame()} (ohne \texttt{sendBuffer()}) und \texttt{drawPlaying()}
-          / \texttt{drawPause()} (mit \texttt{sendBuffer()}), um Flackern zu vermeiden.
+\item Aufbau und Verkabelung aller Hardwarekomponenten.
+\item Einrichtung des Displays sowie Einlesen der Eingaben über Joystick und Taster.
+\item Entwicklung eines Hauptmenüs zur Auswahl der Spiele.
+\item Programmierung der einzelnen Spiele.
+\item Einbau einer Pausenfunktion für alle Spiele.
+\item Speicherung der Highscores im internen Speicher des Arduino.
+\item Testen und Optimieren der gesamten Konsole.
+\item Bau eines passenden Gehäuses aus LEGO.
 \end{enumerate}
+
+Während der Entwicklung wurde das Projekt regelmäßig getestet. Fehler konnten dadurch früh erkannt und behoben werden.
+
 
 \subsection{Schaltplan / Visualisierung}
 
@@ -209,24 +181,28 @@ Buzzer     & 40 & Digital & Aktiv (HIGH = ein) \\
 
 \subsection{Aufgetretene Schwierigkeiten}
 
-Während der Entwicklung traten mehrere Herausforderungen auf:
+\begin{itemize}[leftmargin=*,noitemsep]
+\item \textbf{Displaygröße:} Ursprüngliches Display zu klein, daher Wechsel auf ein größeres OLED Display.
+\item \textbf{Zu wenig Speicher:} Arduino Uno bot nicht genügend Speicher, daher Wechsel auf den Arduino Mega 2560.
+\item \textbf{Pausenfunktion:} Umsetzung des zuverlässigen Pausierens und Fortsetzens war komplexer als erwartet.
+\item \textbf{Gehäusebau:} Integration aller Komponenten im LEGO Gehäuse erforderte mehrere Anpassungen.
+\end{itemize}
 
-\begin{itemize}
-    \item \textbf{Display zu klein:} Das ursprünglich vorgesehene Display erwies sich als
-          zu klein für eine komfortable Spieleanzeige. Es wurde durch ein
-          2.42\textsuperscript{''} OLED mit 128×64 Pixeln ersetzt.
-    \item \textbf{Arbeitsspeicher unzureichend:} Der Arduino Uno verfügt nur über 2~KB
-          SRAM – nicht genug für den Framebuffer (1~KB), mehrere Spielzustände und
-          Objekt-Pools. Die Lösung war der Umstieg auf einen Arduino Mega 2560 mit
-          8~KB SRAM.
-    \item \textbf{Gehäuse-Integration:} Alle Komponenten mit korrekten Pin-Verbindungen
-          in ein LEGO-Gehäuse zu integrieren, erforderte mehrere Anläufe, bis alle
-          Kabel sauber verlegt und die Taster mechanisch stabil montiert waren.
-    \item \textbf{Pause-Funktion:} Das Unterbrechen des laufenden Spielgeschehens und
-          das korrekte Wiederaufnehmen erwies sich als komplex. Die Lösung bestand im
-          Einsatz von Pin-Change-Interrupts, die einen Pause-Flag setzen, der im
-          Hauptloop ausgewertet wird. So wird die Spiel-Logik zuverlässig angehalten,
-          während der Pause-Bildschirm weiterhin Eingaben verarbeiten kann.
+\subsection{Abweichungen und Anpassungen}
+
+Im Verlauf des Projekts wurden einige Änderungen vorgenommen. Statt des ursprünglich geplanten Arduino Uno kam ein Arduino Mega 2560 zum Einsatz. Zusätzlich wurde ein größeres Display verwendet.
+
+Diese Änderungen verbesserten die Leistung des Systems und ermöglichten die Umsetzung weiterer Spiele. Dadurch wurde der Funktionsumfang des Projekts sogar erweitert.
+
+\subsection{Ausblick}
+
+Die entwickelte Konsole kann zukünftig um weitere Funktionen ergänzt werden.
+
+\begin{itemize}[noitemsep]
+\item Entwicklung zusätzlicher Spiele
+\item Betrieb mit einem Akku für mehr Mobilität
+\item Neues Gehäuse aus dem 3D Drucker
+\item Verbesserte Soundausgabe mit Lautsprecher
 \end{itemize}
 
 % ============================================================
@@ -236,57 +212,29 @@ Während der Entwicklung traten mehrere Herausforderungen auf:
 
 \subsection{Soll-Ist-Vergleich}
 
-\begin{tabularx}{\textwidth}{|l|X|X|}
-\hline
-\textbf{Anforderung} & \textbf{Soll} & \textbf{Ist} \\
-\hline
-Homescreen        & Spielauswahl mit Vorschau & \textbf{Erfüllt:}
-                    Horizontales Karten-Layout mit weicher Scroll-Animation,
-                    16×16 Icons, Spielname unter jedem Bild \\
-\hline
-Spieleanzahl      & Mind. 2 Spiele & \textbf{Übertroffen:}
-                    5 Spiele implementiert (Snake, Space Invaders, Dino Jump,
-                    Vampire Survivors, Rocket-Launch) \\
-\hline
-Highscore         & Punktezähler während des Spiels & \textbf{Erfüllt:}
-                    Persistente Speicherung im EEPROM pro Spiel, Anzeige im
-                    Menü und Game-Over-Bildschirm \\
-\hline
-Pause / Menü      & Pausieren, Fortsetzen, Neustart & \textbf{Erfüllt:}
-                    Debounced Menu-Navigation, 300\,ms Guard gegen
-                    versehentliches Doppel-Pausieren \\
-\hline
-Sound             & Akustisches Feedback & \textbf{Erfüllt:}
-                    Nicht-blockierender Buzzer mit \texttt{SoundManager} \\
-\hline
-Performance       & Flüssiges Gameplay & \textbf{Erfüllt:}
-                    Stabile 30\,FPS durch Frame-Timer (33\,ms Intervall),
-                    optimierte Zeichenprimitive \\
-\hline
-Erweiterbarkeit   & Neue Spiele einfach hinzufügbar & \textbf{Erfüllt:}
-                    Einheitliche \texttt{Game}-Schnittstelle, neues Spiel in
-                    8 Schritten integrierbar \\
-\hline
-Gehäuse           & Tragbares Gerät & \textbf{Erfüllt:}
-                    Kompaktes LEGO-Gehäuse mit allen Komponenten \\
-\hline
-\end{tabularx}
+\begin{itemize}[leftmargin=*,noitemsep]
+\item \textbf{Homescreen:} Erfüllt – Spielauswahl mit Vorschau, Icons und Animationen.
+\item \textbf{Spieleanzahl:} Übertroffen – 5 Spiele statt der geplanten 2.
+\item \textbf{Highscore:} Erfüllt – dauerhafte Speicherung und Anzeige der Bestwerte.
+\item \textbf{Pause und Menü:} Erfüllt – Pausieren, Fortsetzen und Neustarten möglich.
+\item \textbf{Sound:} Erfüllt – akustische Rückmeldungen über einen Buzzer.
+\item \textbf{Performance:} Erfüllt – flüssige Darstellung ohne spürbare Verzögerungen.
+\item \textbf{Erweiterbarkeit:} Erfüllt – neue Spiele können einfach ergänzt werden.
+\item \textbf{Gehäuse:} Erfüllt – kompakte und tragbare Bauweise.
+\end{itemize}
 
 \subsection{Qualitätskontrolle}
 
 Die Konsole wurde in mehreren Test-Sessions auf Herz und Nieren geprüft:
 sämtliche Spiele wurden auf korrektes Verhalten bei Game-Over, Pause und
 Menü-Rückkehr getestet. Die Highscore-Persistenz wurde durch Stromtrennung
-verifiziert. Das Gehäuse hält auch intensiverem Tastendruck stand, und die
-Steckverbindungen bleiben auch bei Bewegung des Gerätes stabil.
+verifiziert. Zusätzlich wurde kontrolliert, ob das Gehäuse stabil ist und alle Bedienelemente zuverlässig funktionieren.
 
 \subsection{Abweichungen und Anpassungen}
 
 Die wesentlichen Abweichungen vom ursprünglichen Plan – Umstieg auf ein
 größeres Display und den leistungsfähigeren Mega 2560 – haben den Projektumfang
-eher erweitert als eingeschränkt. Der zusätzliche Speicher ermöglichte erst die
-Umsetzung komplexerer Spiele wie Vampire Survivors und Eternal, die umfangreiche
-Objekt-Pools und Zustandsautomaten benötigen.
+eher erweitert als eingeschränkt. Der größere Speicher ermöglichte die Entwicklung aufwendigerer Spiele wie Vampire Survivors und Eternal. Diese Spiele benötigen mehr Speicher, da sie viele Objekte und Spielzustände gleichzeitig verwalten.
 
 \subsection{Ausblick}
 
@@ -294,8 +242,6 @@ Das Projekt bietet zahlreiche Anknüpfungspunkte für Weiterentwicklungen:
 \begin{itemize}[noitemsep]
     \item \textbf{Weitere Spiele:} Die modulare Architektur erlaubt das einfache
           Hinzufügen von Tetris, Pong oder Jump-\textquotesingle{}n\textquotesingle{}-Run-Varianten.
-    \item \textbf{Multiplayer:} Über die serielle Schnittstelle (UART) des Mega
-          könnten zwei Geräte für kompetitive Spiele gekoppelt werden.
     \item \textbf{Akku-Betrieb:} Ein Li-Ion-Akku mit Ladeelektronik würde das
           Gerät vollständig mobil machen.
     \item \textbf{Gehäuse-Veredelung:} Ein 3D-gedrucktes, ergonomisch optimiertes
@@ -313,11 +259,9 @@ Folgende Materialien sind diesem Handout beigefügt bzw. liegen im Moodle-Abgabe
 vor:
 
 \begin{enumerate}[noitemsep]
-    \item Schaltplan (Fritzing / handgezeichnet)
-    \item Vollständiger Programmcode (siehe Moodle-Abgabe)
-    \item Screenshots aller Spiele und des Homescreens
-    \item Video: Aufbau und Funktion der Konsole (siehe Moodle-Abgabe)
-    \item Präsentationsfolien (siehe Moodle-Abgabe)
+    \item Schaltplan
+    \item Interessante Code Stellen
+    \item Screenshots von Spielen und Menüs
 \end{enumerate}
 
 \end{document}
