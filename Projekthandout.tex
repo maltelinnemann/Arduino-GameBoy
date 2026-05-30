@@ -11,6 +11,7 @@
 \usepackage{enumitem}
 \usepackage{xcolor}
 \usepackage{colortbl}
+\usepackage{float}
 
 \geometry{left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm}
 
@@ -120,11 +121,11 @@ Der Bearbeitungszeitraum erstreckte sich vom 22.04.2026 bis zum
 1 & Konzeption: Anforderungen definieren, Hardware auswählen,
     Spieleideen skizzieren & 5 \\
 2 & Basisaufbau: Display in Betrieb nehmen, Joystick und Taster
-    anbinden, Software-Grundgerüst & 4 \\
-3 & Spieleentwicklung: Homescreen, Space Invaders, Dino Jump &  \\
-4 & Erweiterung: Vampire Survivors, Snake, Eternal & 4 \\
+    anbinden, Software-Grundgerüst & 3 \\
+3 & Spieleentwicklung: Homescreen, Space Invaders, Dino Jump & 3 \\
+4 & Erweiterung: Vampire Survivors, Snake, Eternal & 3 \\
 5 & Gehäusebau, Feinabstimmung, Pause-Logic, Highscore-EEPROM & 3 \\
-6 & Dokumentation, Präsentation, Videoerstellung & 4 \\
+6 & Dokumentation, Präsentation, Videoerstellung & 3 \\
 \hline
 \end{tabularx}
 
@@ -264,4 +265,63 @@ vor:
     \item Screenshots von Spielen und Menüs
 \end{enumerate}
 
+% ============================================================
+% 5. ANLAGEN
+% ============================================================
+\newpage
+\section{Anlagen}
+
+\subsection{Anlage 1 – Schaltplan}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/schaltplan.png}
+    \caption{Schaltplan der Arduino-PIXEL-Konsole}
+\end{figure}
+
+% ============================================================
+% ANLAGE 2
+% ============================================================
+\newpage
+\subsection{Anlage 2 – Arduino PIXEL und Spiele}
+
+\subsubsection*{Homescreen}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/homescreen.jpg}
+    \caption{Der Startbildschirm}
+\end{figure}
+
+\subsubsection*{Spielauswahl}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/game_selection.jpg}
+    \caption{Implementierung der Spieleauswahl}
+\end{figure}
+
+% ============================================================
+% ANLAGE 3
+% ============================================================
+\newpage
+\subsection{Anlage 3 – Interessante Code-Stellen}
+
+\subsubsection*{Setup}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/setup.png}
+    \caption{Setup Funktion}
+\end{figure}
+
+\newpage
+
+\subsubsection*{Programm Loop}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/loop.png}
+    \caption{Übergeordneter Programm Loop}
+\end{figure}
 \end{document}
