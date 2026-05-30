@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arduino PIXEL – Präsentation</title>
+<style>
+/* ============================================================
+   CSS DESIGN SYSTEM – Arduino PIXEL Presentation
+   Clean light mode, professional projector-ready
+   ============================================================ */
+
+:root {
+  --bg: #e8ecf1;
+  --slide-bg: #ffffff;
+  --card-bg: #f4f6f8;
+  --card-border: #dde1e6;
+  --text: #1a1a2e;
+  --text-muted: #6b7280;
+  --blue: #2563eb;
+  --blue-light: #dbeafe;
+  --orange: #ea580c;
+  --purple: #7c3aed;
+  --green: #16a34a;
+  --green-light: #dcfce7;
+  --red: #dc2626;
+  --red-light: #fee2e2;
+  --yellow: #ca8a04;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+/* ---- Slide Container ---- */
+.slide {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.45s ease;
+  pointer-events: none;
+  z-index: 1;
+  padding: var(--space-3xl);
+  background: var(--slide-bg);
+}
+.slide.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+  z-index: 2;
+}
+.slide.exit-left  { transform: translateX(-100%); opacity: 0; }
+.slide.exit-right { transform: translateX(100%);  opacity: 0; }
+
+.slide-inner {
+  width: 100%; max-width: 1100px;
+  max-height: calc(100vh - var(--space-3xl) * 2);
+  display: flex; flex-direction: column;
+  gap: var(--space-lg);
+}
+
+/* ---- Typography ---- */
+h1 {
+  font-size: clamp(2.2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+h2 {
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--blue);
+}
+h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.slide-number {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* ---- Header bar ---- */
+.slide-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-bottom: 2px solid var(--blue);
+  padding-bottom: var(--space-sm);
+}
+
+/* ---- Layouts ---- */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-xl);
+  align-items: center;
+  flex: 1;
+  min-height: 0;
+}
+.three-col {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-lg);
+}
+.four-col {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-lg);
+}
+.col { min-width: 0; }
+
+/* ---- Cards ---- */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: var(--space-lg);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.card:hover { border-color: var(--blue); box-shadow: 0 2px 12px rgba(37,99,235,0.1); }
+.card h3 { margin-bottom: var(--space-sm); }
+.card p  { color: var(--text-muted); font-size: 0.95rem; }
+
+/* Game cards */
+.game-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: var(--space-md) var(--space-lg);
+  text-align: center;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.game-card:hover { border-color: var(--purple); box-shadow: 0 2px 12px rgba(124,58,237,0.1); }
+.game-card .icon { font-size: 2.5rem; margin-bottom: var(--space-xs); }
+.game-card h3 { font-size: 1.05rem; margin-bottom: 2px; color: var(--blue); }
+.game-card .tag { font-size: 0.75rem; color: var(--purple); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.game-card p { font-size: 0.85rem; color: var(--text-muted); margin-top: var(--space-xs); }
+
+/* ---- Title Slide ---- */
+.title-slide { text-align: center; }
+.title-slide h1 {
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.title-slide .subtitle {
+  font-size: 1.3rem;
+  color: var(--text-muted);
+  margin-top: var(--space-sm);
+}
+.title-slide .meta {
+  margin-top: var(--space-2xl);
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.8;
+}
+.title-slide .meta strong { color: var(--text); }
+
+/* ---- Tables ---- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+th, td {
+  padding: var(--space-sm) var(--space-md);
+  text-align: left;
+  border-bottom: 1px solid var(--card-border);
+}
+th {
+  color: var(--blue);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+tr:nth-child(even) td { background: var(--card-bg); }
+.total-row td { font-weight: 700; color: var(--blue); border-top: 2px solid var(--blue); }
+
+/* ---- Goal List ---- */
+.goal-list { list-style: none; display: flex; flex-direction: column; gap: var(--space-sm); }
+.goal-list li {
+  counter-increment: goal;
+  display: flex; align-items: flex-start; gap: var(--space-md);
+  font-size: 1rem;
+}
+.goal-list li::before {
+  content: counter(goal);
+  flex-shrink: 0;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ---- Timeline ---- */
+.timeline-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+.timeline-full {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md) var(--space-lg);
+  width: 100%;
+}
+.timeline-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: var(--space-md);
+  border-left: 4px solid var(--blue);
+}
+.timeline-card .phase-num {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--blue);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+.timeline-card h4 { font-size: 0.95rem; margin-bottom: 2px; }
+.timeline-card .hours { font-size: 0.78rem; color: var(--text-muted); font-weight: 600; margin-bottom: 2px; }
+.timeline-card p { font-size: 0.82rem; color: var(--text-muted); line-height: 1.4; }
+
+/* ---- Architecture Diagram ---- */
+.arch-diagram {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+.arch-row {
+  display: flex;
+  gap: var(--space-md);
+  align-items: stretch;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.arch-box {
+  background: var(--card-bg);
+  border: 2px solid var(--blue);
+  border-radius: 10px;
+  padding: var(--space-md) var(--space-lg);
+  text-align: center;
+  min-width: 130px;
+}
+.arch-box.mother {
+  border-color: var(--purple);
+  background: #f5f3ff;
+  max-width: 280px;
+  margin: 0 auto;
+}
+.arch-box.child {
+  border-color: var(--blue);
+  background: var(--blue-light);
+  font-size: 0.9rem;
+}
+.arch-box h4 { font-size: 0.95rem; margin-bottom: 2px; }
+.arch-box p  { font-size: 0.78rem; color: var(--text-muted); }
+.arch-arrow {
+  display: flex; align-items: center;
+  color: var(--purple);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+.arch-states {
+  display: flex; gap: var(--space-sm); justify-content: center; flex-wrap: wrap; margin-top: var(--space-sm);
+}
+.arch-state {
+  background: #fff;
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  padding: var(--space-xs) var(--space-md);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.arch-state.active-state { border-color: var(--green); color: var(--green); background: var(--green-light); }
+
+/* ---- Problem/Solution ---- */
+.prob-sol {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: var(--space-lg);
+  align-items: center;
+}
+.prob-sol .divider {
+  display: flex; flex-direction: column; align-items: center;
+  color: var(--blue); font-size: 1.5rem; font-weight: 700;
+}
+.prob-box {
+  background: var(--red-light);
+  border: 1px solid rgba(220,38,38,0.3);
+  border-radius: 10px;
+  padding: var(--space-md);
+  border-left: 4px solid var(--red);
+}
+.sol-box {
+  background: var(--green-light);
+  border: 1px solid rgba(22,163,74,0.3);
+  border-radius: 10px;
+  padding: var(--space-md);
+  border-left: 4px solid var(--green);
+}
+.prob-box h4, .sol-box h4 { font-size: 0.9rem; margin-bottom: 4px; }
+.prob-box h4 { color: var(--red); }
+.sol-box h4 { color: var(--green); }
+.prob-box p, .sol-box p { font-size: 0.85rem; color: var(--text-muted); }
+
+/* ---- Soll/Ist Table ---- */
+.compare-table td:first-child { font-weight: 600; width: 30%; }
+.compare-table .fulfilled { color: var(--green); font-weight: 600; }
+.compare-table .exceeded { color: var(--orange); font-weight: 700; }
+
+/* ---- Images ---- */
+.img-wrap {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  display: flex; align-items: center; justify-content: center;
+}
+.img-wrap img {
+  display: block;
+  max-width: 100%;
+  max-height: 380px;
+  width: auto; height: auto;
+  object-fit: contain;
+}
+
+/* ---- Code Box ---- */
+.code-box {
+  background: #f1f5f9;
+  border: 1px solid rgba(37,99,235,0.2);
+  border-radius: 8px;
+  padding: var(--space-md);
+  font-family: 'SF Mono', 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+  font-size: 0.8rem;
+  color: var(--blue);
+  white-space: pre;
+  overflow-x: auto;
+  line-height: 1.6;
+}
+
+/* ---- Thank You Slide ---- */
+.thanks-slide { text-align: center; }
+.thanks-slide h1 {
+  font-size: clamp(3rem, 7vw, 5rem);
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ---- Nav Controls ---- */
+#nav-controls {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-xl);
+  pointer-events: none;
+}
+#nav-controls > * { pointer-events: auto; }
+
+.nav-btn {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--card-border);
+  background: rgba(255,255,255,0.9);
+  color: var(--text);
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.nav-btn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+.nav-btn:active { transform: scale(0.95); }
+
+#slide-dots { display: flex; gap: var(--space-sm); }
+#slide-dots .dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--card-border);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+#slide-dots .dot.active { background: var(--blue); box-shadow: 0 0 6px rgba(37,99,235,0.4); }
+#slide-dots .dot:hover:not(.active) { background: #94a3b8; }
+
+#slide-counter {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  min-width: 60px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+}
+
+/* ---- Accent utility ---- */
+.accent { color: var(--blue); }
+.accent2 { color: var(--orange); }
+.accent3 { color: var(--purple); }
+.text-green { color: var(--green); }
+.text-small { font-size: 0.85rem; color: var(--text-muted); }
+
+/* ---- Responsive ---- */
+@media (max-width: 900px) {
+  .two-col { grid-template-columns: 1fr; }
+  .three-col, .timeline-full { grid-template-columns: 1fr 1fr; }
+  .four-col { grid-template-columns: 1fr 1fr; }
+  .prob-sol { grid-template-columns: 1fr; }
+  .slide { padding: var(--space-lg); }
+  h1 { font-size: 1.8rem; }
+  h2 { font-size: 1.3rem; }
+}
+
+@media (max-width: 600px) {
+  .three-col, .four-col, .timeline-full { grid-template-columns: 1fr; }
+  #nav-controls { gap: var(--space-sm); padding: var(--space-sm); }
+}
+
+/* ---- Print ---- */
+@media print {
+  .slide { position: relative; width: 100%; height: auto; opacity: 1; transform: none; page-break-after: always; }
+  #nav-controls { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     SLIDE 1 – TITELFOLIE
+     ============================================================ -->
+<section class="slide active" data-index="0">
+  <div class="slide-inner title-slide">
+    <div>
+      <h1>Arduino PIXEL</h1>
+      <p class="subtitle">Handheld-Spielekonsole</p>
+      <div class="meta">
+        <p><strong>Malte Linnemann</strong> &nbsp;·&nbsp; <strong>Marcel Schmidt</strong> &nbsp;·&nbsp; <strong>Jakob Münch</strong></p>
+        <p>IFA41 — BBS Brinkstraße</p>
+        <p>Betreuer: Herr Diekbreder</p>
+        <p>29. Mai 2026</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 2 – PROJEKTIDEE & ZIELE
+     ============================================================ -->
+<section class="slide" data-index="1">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <h2>Projektidee &amp; Ziele</h2>
+      <span class="slide-number">02 / 10</span>
+    </div>
+    <div class="two-col">
+      <div class="col">
+        <p style="margin-bottom:var(--space-lg);">Entwicklung einer <span class="accent">tragbaren Spielekonsole</span> mit einem Arduino Mega 2560 – ausgestattet mit OLED-Display, Joystick, zwei Tasten und Buzzer.</p>
+        <p style="margin-bottom:var(--space-lg); color:var(--text-muted);">Praktische Anwendung der Unterrichtsinhalte:<br>Displays ansteuern, Sensoren auslesen, Tastereingaben verarbeiten, Mikrocontroller programmieren.</p>
+        <ol class="goal-list">
+          <li>Startbildschirm mit Spielauswahl</li>
+          <li>Mehrere spielbare Spiele auf einem Gerät</li>
+          <li>Pausenmenü (Weiter, Neustart, Hauptmenü)</li>
+          <li>Highscore-Speicherung (auch nach Ausschalten)</li>
+          <li>Akustische Rückmeldungen (Buzzer)</li>
+          <li>Einfache Erweiterbarkeit um neue Spiele</li>
+          <li>Flüssiges Spielerlebnis ohne Verzögerungen</li>
+        </ol>
+      </div>
+      <div class="col">
+        <div class="img-wrap">
+          <img src="images/homescreen.jpg" alt="Arduino PIXEL – Homescreen" loading="lazy">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 3 – HARDWARE & KOMPONENTEN
+     ============================================================ -->
+<section class="slide" data-index="2">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <h2>Hardware &amp; Komponenten</h2>
+      <span class="slide-number">03 / 10</span>
+    </div>
+    <div class="two-col">
+      <div class="col">
+        <table>
+          <thead>
+            <tr><th>Komponente</th><th>Anz.</th><th>Kosten (ca.)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Arduino Mega 2560 (Rev. 3)</td><td>1</td><td>50,00 €</td></tr>
+            <tr><td>2.42" OLED-Display (SSD1309, SPI)</td><td>1</td><td>18,00 €</td></tr>
+            <tr><td>Joystick-Modul (VRX, VRY, SW)</td><td>1</td><td>3,00 €</td></tr>
+            <tr><td>Taster (Pull-Down)</td><td>2</td><td>0,50 €</td></tr>
+            <tr><td>Aktiver Buzzer</td><td>1</td><td>1,00 €</td></tr>
+            <tr><td>Widerstände, Jumper-Kabel, Steckbrett</td><td>–</td><td>5,00 €</td></tr>
+            <tr><td>LEGO-Steine (Gehäuse)</td><td>–</td><td>5,00 €</td></tr>
+            <tr class="total-row"><td><strong>Gesamtkosten</strong></td><td></td><td><strong>82,50 €</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="col">
+        <div class="img-wrap">
+          <img src="images/pixel.jpg" alt="Arduino PIXEL – Fertiges Gerät" loading="lazy">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 4 – ENTWICKLUNGSPROZESS
+     ============================================================ -->
+<section class="slide" data-index="3">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <h2>Entwicklungsprozess</h2>
+      <span class="slide-number">04 / 10</span>
+    </div>
+    <p style="text-align:center;color:var(--text-muted);">22. April – 3. Juni 2026 &nbsp;·&nbsp; <span class="accent"><strong>~20 Stunden</strong></span> Entwicklungszeit</p>
+    <div class="timeline-wrap">
+      <div class="timeline-full">
+        <div class="timeline-card">
+          <div class="phase-num">Phase 1</div>
+          <h4>Konzeption</h4>
+          <div class="hours">5 Stunden</div>
+          <p>Anforderungen definieren, Hardware auswählen, Spieleideen skizzieren</p>
+        </div>
+        <div class="timeline-card">
+          <div class="phase-num">Phase 2</div>
+          <h4>Basisaufbau</h4>
+          <div class="hours">3 Stunden</div>
+          <p>Display in Betrieb nehmen, Joystick &amp; Taster anbinden, Software-Grundgerüst</p>
+        </div>
+        <div class="timeline-card">
+          <div class="phase-num">Phase 3</div>
+          <h4>Spieleentwicklung</h4>
+          <div class="hours">3 Stunden</div>
+          <p>Homescreen, Space Invaders, Dino Jump – erste spielbare Spiele</p>
+        </div>
+        <div class="timeline-card">
+          <div class="phase-num">Phase 4</div>
+          <h4>Erweiterung</h4>
+          <div class="hours">3 Stunden</div>
+          <p>Vampire Survivors, Snake, Eternal – insgesamt 5 Spiele mit einheitlichem Interface</p>
+        </div>
+        <div class="timeline-card">
+          <div class="phase-num">Phase 5</div>
+          <h4>Gehäuse &amp; Feinschliff</h4>
+          <div class="hours">3 Stunden</div>
+          <p>LEGO-Gehäuse bauen, Pause-Logik verfeinern, Highscore-EEPROM integrieren</p>
+        </div>
+        <div class="timeline-card">
+          <div class="phase-num">Phase 6</div>
+          <h4>Dokumentation</h4>
+          <div class="hours">3 Stunden</div>
+          <p>Handout schreiben, Präsentation erstellen, Video aufnehmen</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 5 – TECHNISCHE DETAILS
+     ============================================================ -->
+<section class="slide" data-index="4">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <h2>Technische Details</h2>
+      <span class="slide-number">05 / 10</span>
+    </div>
+    <div class="two-col">
+      <div class="col">
+        <h3 style="margin-bottom:var(--space-sm);">Pin-Belegung</h3>
+        <table style="font-size:0.85rem;">
+          <thead><tr><th>Komponente</th><th>Pin</th><th>Typ</th></tr></thead>
+          <tbody>
+            <tr><td>OLED CS</td><td>10</td><td>SPI</td></tr>
+            <tr><td>OLED DC</td><td>9</td><td>SPI</td></tr>
+            <tr><td>OLED RST</td><td>8</td><td>SPI</td></tr>
+            <tr><td>OLED MOSI</td><td>51</td><td>HW-SPI</td></tr>
+            <tr><td>OLED SCK</td><td>52</td><td>HW-SPI</td></tr>
+            <tr><td>Joystick X / Y</td><td>A0 / A1</td><td>Analog</td></tr>
+            <tr><td>Joystick SW</td><td>2</td><td>Interrupt (INT4)</td></tr>
+            <tr><td>Button 1 (Aktion)</td><td>32</td><td>Digital (PCINT2)</td></tr>
+            <tr><td>Button 2 (Pause)</td><td>30</td><td>Digital (PCINT2)</td></tr>
+            <tr><td>Buzzer</td><td>40</td><td>Digital</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="col">
+        <h3 style="margin-bottom:var(--space-md);">Software-Architektur</h3>
+        <div class="arch-diagram">
+          <!-- Mother class -->
+          <div class="arch-box mother">
+            <h4>🎮 Game <span style="font-weight:400;color:var(--text-muted);">(abstrakte Mutterklasse)</span></h4>
+            <p>setup() &nbsp;·&nbsp; loop(InputState) &nbsp;·&nbsp; getName()</p>
+          </div>
+          <div style="display:flex;gap:var(--space-sm);justify-content:center;flex-wrap:wrap;font-size:0.85rem;color:var(--purple);font-weight:600;">
+            <span>▸ vererbt an ▸</span>
+          </div>
+          <!-- Child classes -->
+          <div class="arch-row">
+            <div class="arch-box child"><h4>Infinity</h4><p>Space Invaders</p></div>
+            <div class="arch-box child"><h4>Velocity</h4><p>Dino Jump</p></div>
+            <div class="arch-box child"><h4>Godly</h4><p>Vampire Survivors</p></div>
+            <div class="arch-box child"><h4>Origin</h4><p>Snake</p></div>
+            <div class="arch-box child"><h4>Eternal</h4><p>Rocket</p></div>
+          </div>
+          <!-- State machine -->
+          <div style="margin-top:var(--space-md);">
+            <p style="text-align:center;font-weight:600;margin-bottom:var(--space-sm);">Jedes Spiel nutzt die gleiche <span class="accent">Zustandsmaschine</span>:</p>
+            <div class="arch-states">
+              <span class="arch-state active-state">MENÜ</span>
+              <span style="color:var(--text-muted);">→</span>
+              <span class="arch-state active-state">SPIELEN</span>
+              <span style="color:var(--text-muted);">→</span>
+              <span class="arch-state">PAUSE</span>
+              <span style="color:var(--text-muted);">→</span>
+              <span class="arch-state">GAME OVER</span>
+            </div>
+          </div>
+          <!-- Key details -->
+          <div style="display:flex;gap:var(--space-md);justify-content:center;flex-wrap:wrap;margin-top:var(--space-sm);">
+            <span style="font-size:0.82rem;color:var(--text-muted);">⏱ 30 FPS Game-Loop</span>
+            <span style="font-size:0.82rem;color:var(--text-muted);">📦 Object Pools (fixe Arrays)</span>
+            <span style="font-size:0.82rem;color:var(--text-muted);">💾 EEPROM Highscores</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 6 – DIE 5 SPIELE
+     ============================================================ -->
+<section class="slide" data-index="5">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <h2>Die 5 Spiele</h2>
+      <span class="slide-number">06 / 10</span>
+    </div>
+    <div class="two-col">
+      <div class="col">
+        <div class="three-col" style="margin-bottom:var(--space-md);">
+          <div class="game-card">
+            <div class="icon">🛸</div>
+            <h3>Infinity</h3>
+            <div class="tag">Space Invaders</div>
+            <p>3 Gegnertypen · Leben · Power-Ups · Wellen</p>
+          </div>
+          <div class="game-card">
+            <div class="icon">🏃</div>
+            <h3>Velocity</h3>
+            <div class="tag">Dino Jump</div>
+            <p>Endless Runner · Hindernisse · Speed-Ramps</p>
+          </div>
+          <div class="game-card">
+            <div class="icon">⚔️</div>
+            <h3>Godly</h3>
+            <div class="tag">Vampire Survivors</div>
+            <p>4 Gegnertypen · Räume · Upgrade-System</p>
+          </div>
+        </div>
+        <div class="two-col">
+          <div class="game-card">
+            <div class="icon">🐍</div>
+            <h3>Origin</h3>
+            <div class="tag">Snake</div>
+            <p>16×8 Raster · Boost-Modus · Richtungswechsel</p>
+          </div>
+          <div class="game-card">
+            <div class="icon">🚀</div>
+            <h3>Eternal</h3>
+            <div class="tag">Rocket</div>
+            <p>4 Raketentypen · 3 Skill-Bäume · Physik</p>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="img-wrap">
+          <img src="images/game_selection.jpg" alt="Arduino PIXEL – Spielauswahl" loading="lazy">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 7 – SCHWIERIGKEITEN
+     ============================================================ -->
+<section class="slide" data-index="6">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <h2>Aufgetretene Schwierigkeiten</h2>
+      <span class="slide-number">07 / 10</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:var(--space-md);flex:1;justify-content:center;">
+      <div class="prob-sol">
+        <div class="prob-box">
+          <h4>⚠ Problem</h4>
+          <p>Ursprüngliches Display zu klein – Texte und Grafiken kaum lesbar.</p>
+        </div>
+        <div class="divider">→</div>
+        <div class="sol-box">
+          <h4>✓ Lösung</h4>
+          <p>Wechsel auf ein größeres 2.42" OLED-Display (128×64 Pixel, SSD1309).</p>
+        </div>
+      </div>
+      <div class="prob-sol">
+        <div class="prob-box">
+          <h4>⚠ Problem</h4>
+          <p>Arduino Uno hatte nicht genug Speicher für mehrere Spiele und Framebuffer.</p>
+        </div>
+        <div class="divider">→</div>
+        <div class="sol-box">
+          <h4>✓ Lösung</h4>
+          <p>Wechsel auf Arduino Mega 2560 (8KB SRAM, 256KB Flash).</p>
+        </div>
+      </div>
+      <div class="prob-sol">
+        <div class="prob-box">
+          <h4>⚠ Problem</h4>
+          <p>Pausenfunktion unzuverlässig – Tastendruck wurde oft nicht erkannt.</p>
+        </div>
+        <div class="divider">→</div>
+        <div class="sol-box">
+          <h4>✓ Lösung</h4>
+          <p>Hybrider Input (Interrupt + Polling), PCINT-Masking, 300ms Toggle-Guard.</p>
+        </div>
+      </div>
+      <div class="prob-sol">
+        <div class="prob-box">
+          <h4>⚠ Problem</h4>
+          <p>Integration aller Komponenten im LEGO-Gehäuse erforderte mehrere Anpassungen.</p>
+        </div>
+        <div class="divider">→</div>
+        <div class="sol-box">
+          <h4>✓ Lösung</h4>
+          <p>Mehrere Gehäuse-Iterationen mit verbesserter Kabelführung und Stabilität.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 8 – ERGEBNISSE
+     ============================================================ -->
+<section class="slide" data-index="7">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <h2>Ergebnisse – Soll/Ist-Vergleich</h2>
+      <span class="slide-number">08 / 10</span>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:var(--space-lg);">
+      <table class="compare-table">
+        <thead><tr><th>Anforderung</th><th>Status</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Homescreen</td>
+            <td class="fulfilled">✓ Erfüllt</td>
+            <td>Spielauswahl mit Icons, Animationen, Boot-Screen</td>
+          </tr>
+          <tr>
+            <td>Spieleanzahl</td>
+            <td class="exceeded">★ Übertroffen</td>
+            <td>5 Spiele statt der geplanten 2</td>
+          </tr>
+          <tr>
+            <td>Highscore</td>
+            <td class="fulfilled">✓ Erfüllt</td>
+            <td>Dauerhafte EEPROM-Speicherung je Spiel</td>
+          </tr>
+          <tr>
+            <td>Pause &amp; Menü</td>
+            <td class="fulfilled">✓ Erfüllt</td>
+            <td>Pausieren, Fortsetzen, Neustart, Zurück</td>
+          </tr>
+          <tr>
+            <td>Sound</td>
+            <td class="fulfilled">✓ Erfüllt</td>
+            <td>Akustische Rückmeldungen über Buzzer</td>
+          </tr>
+          <tr>
+            <td>Performance</td>
+            <td class="fulfilled">✓ Erfüllt</td>
+            <td>Flüssige 30 FPS ohne spürbare Verzögerungen</td>
+          </tr>
+          <tr>
+            <td>Erweiterbarkeit</td>
+            <td class="fulfilled">✓ Erfüllt</td>
+            <td>Modulare Architektur – neue Spiele einfach ergänzbar</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="card" style="text-align:center;">
+        <p><span class="accent2" style="font-size:1.3rem;">★</span> <strong>Alle 7 Anforderungen erfüllt</strong> – Spieleanzahl sogar übertroffen</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 9 – AUSBLICK
+     ============================================================ -->
+<section class="slide" data-index="8">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <h2>Ausblick &amp; Weiterentwicklung</h2>
+      <span class="slide-number">09 / 10</span>
+    </div>
+    <div class="four-col" style="flex:1;align-content:center;">
+      <div class="card" style="text-align:center;">
+        <div style="font-size:2.5rem;margin-bottom:var(--space-sm);">🎮</div>
+        <h3>Weitere Spiele</h3>
+        <p>Modulare Architektur erlaubt einfaches Hinzufügen von Tetris, Pong oder Jump'n'Run-Varianten.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div style="font-size:2.5rem;margin-bottom:var(--space-sm);">🔋</div>
+        <h3>Akku-Betrieb</h3>
+        <p>Li-Ion-Akku mit Ladeelektronik für vollständige Mobilität – kein USB-Kabel nötig.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div style="font-size:2.5rem;margin-bottom:var(--space-sm);">🖨️</div>
+        <h3>3D-Gehäuse</h3>
+        <p>3D-gedrucktes, ergonomisch optimiertes Gehäuse für mehr Komfort und professionellere Optik.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div style="font-size:2.5rem;margin-bottom:var(--space-sm);">🔊</div>
+        <h3>Besserer Sound</h3>
+        <p>Passiver Lautsprecher mit PWM-Ansteuerung für Melodien statt einfacher Piepstöne.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 10 – DANKE
+     ============================================================ -->
+<section class="slide" data-index="9">
+  <div class="slide-inner thanks-slide">
+    <div>
+      <h1>Vielen Dank!</h1>
+      <p style="font-size:1.2rem;color:var(--text-muted);margin-top:var(--space-lg);">für Ihre Aufmerksamkeit</p>
+      <div style="margin-top:var(--space-3xl);font-size:0.9rem;color:var(--text-muted);line-height:2;">
+        <p><strong style="color:var(--text);">Arduino PIXEL</strong> – Handheld-Spielekonsole</p>
+        <p>Malte Linnemann · Marcel Schmidt · Jakob Münch</p>
+        <p>IFA41 · BBS Brinkstraße · 29. Mai 2026</p>
+        <p style="margin-top:var(--space-lg);">
+          <span class="accent">Quellen:</span>
+          Arduino Mega 2560 Dokumentation ·
+          U8g2 Library ·
+          Eigenentwicklung
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     NAVIGATION CONTROLS
+     ============================================================ -->
+<div id="nav-controls">
+  <button id="prev-btn" class="nav-btn" aria-label="Vorherige Folie" title="Vorherige (←)">◀</button>
+  <div id="slide-dots"></div>
+  <span id="slide-counter">1 / 10</span>
+  <button id="next-btn" class="nav-btn" aria-label="Nächste Folie" title="Nächste (→)">▶</button>
+</div>
+
+<script>
+/* ============================================================
+   JAVASCRIPT – Slide Navigation
+   ============================================================ */
+(function() {
+  'use strict';
+
+  var slides = document.querySelectorAll('.slide');
+  var totalSlides = slides.length;
+  var currentSlide = 0;
+  var isTransitioning = false;
+  var TRANSITION_MS = 500;
+
+  var prevBtn = document.getElementById('prev-btn');
+  var nextBtn = document.getElementById('next-btn');
+  var dotsContainer = document.getElementById('slide-dots');
+  var counter = document.getElementById('slide-counter');
+
+  /* ---- Build dot navigation ---- */
+  var dots = [];
+  for (var i = 0; i < totalSlides; i++) {
+    var dot = document.createElement('span');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('data-index', i);
+    dot.addEventListener('click', (function(idx) {
+      return function() { goToSlide(idx); };
+    })(i));
+    dotsContainer.appendChild(dot);
+    dots.push(dot);
+  }
+
+  /* ---- Navigate ---- */
+  function goToSlide(index) {
+    if (isTransitioning) return;
+    if (index < 0 || index >= totalSlides) return;
+
+    isTransitioning = true;
+    var current = slides[currentSlide];
+    var next = slides[index];
+    var dir = index > currentSlide ? 1 : -1;
+
+    /* Reset next slide position off-screen */
+    next.style.transition = 'none';
+    next.style.transform = 'translateX(' + (dir * 100) + '%)';
+    next.style.opacity = '0';
+    next.style.pointerEvents = 'none';
+    /* Force reflow */
+    next.offsetHeight;
+
+    /* Move current out */
+    current.style.transition = 'transform ' + (TRANSITION_MS / 1000) + 's cubic-bezier(0.4, 0, 0.2, 1), opacity ' + (TRANSITION_MS * 0.9 / 1000) + 's ease';
+    current.style.transform = 'translateX(' + (-dir * 100) + '%)';
+    current.style.opacity = '0';
+    current.style.pointerEvents = 'none';
+    current.classList.remove('active');
+
+    /* Move next in */
+    next.style.transition = 'transform ' + (TRANSITION_MS / 1000) + 's cubic-bezier(0.4, 0, 0.2, 1), opacity ' + (TRANSITION_MS * 0.9 / 1000) + 's ease';
+    next.style.transform = 'translateX(0)';
+    next.style.opacity = '1';
+    next.style.pointerEvents = 'auto';
+    next.classList.add('active');
+
+    currentSlide = index;
+    updateUI();
+
+    setTimeout(function() {
+      isTransitioning = false;
+    }, TRANSITION_MS);
+  }
+
+  function updateUI() {
+    /* Dots */
+    for (var i = 0; i < dots.length; i++) {
+      dots[i].className = 'dot' + (i === currentSlide ? ' active' : '');
+    }
+    /* Counter */
+    counter.textContent = (currentSlide + 1) + ' / ' + totalSlides;
+    /* Buttons */
+    prevBtn.style.opacity = currentSlide === 0 ? '0.3' : '1';
+    nextBtn.style.opacity = currentSlide === totalSlides - 1 ? '0.3' : '1';
+  }
+
+  /* ---- Event Listeners ---- */
+  prevBtn.addEventListener('click', function() { goToSlide(currentSlide - 1); });
+  nextBtn.addEventListener('click', function() { goToSlide(currentSlide + 1); });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+      e.preventDefault();
+      goToSlide(currentSlide + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      goToSlide(currentSlide - 1);
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      goToSlide(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      goToSlide(totalSlides - 1);
+    }
+  });
+
+  /* Touch swipe support */
+  var touchStartX = 0;
+  var touchStartY = 0;
+  document.addEventListener('touchstart', function(e) {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+  document.addEventListener('touchend', function(e) {
+    var dx = e.changedTouches[0].clientX - touchStartX;
+    var dy = e.changedTouches[0].clientY - touchStartY;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+      if (dx < 0) goToSlide(currentSlide + 1);
+      else goToSlide(currentSlide - 1);
+    }
+  });
+
+  /* Initial UI */
+  updateUI();
+})();
+</script>
+
+</body>
+</html>
